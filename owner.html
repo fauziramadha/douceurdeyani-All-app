@@ -95,7 +95,7 @@
                 <div class="space-y-4">
                     <div class="space-y-1">
                         <label class="text-[9px] font-bold text-stone-400 uppercase ml-2">Link Foto (Direct Link)</label>
-                        <input type="text" id="link-gambar" placeholder="Tempel link foto disini..." class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none focus:ring-2 focus:ring-amber-200" oninput="cekPreview(this.value)">
+                        <input type="text" id="link-gambar" placeholder="Tempel link foto disini..." class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none focus:ring-2 focus:ring-amber-100" oninput="cekPreview(this.value)">
                     </div>
 
                     <div class="relative w-full aspect-square bg-stone-100 rounded-[2rem] overflow-hidden border border-stone-200 flex items-center justify-center">
@@ -103,24 +103,34 @@
                         <div id="text-preview" class="text-center text-stone-300 italic text-[10px]">Preview Foto</div>
                     </div>
 
-                    <input type="text" id="nama" placeholder="Nama Kue..." class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none">
+                    <input type="text" id="nama" placeholder="Nama Produk..." class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none">
                     
                     <div class="grid grid-cols-2 gap-3">
-                        <select id="jenis" class="p-4 bg-stone-50 rounded-2xl text-sm font-bold text-stone-500 border-none">
-                            <option value="Kue">Kue Kering</option>
-                            <option value="Roti">Roti</option>
+                        <select id="jenis" onchange="cekVarian(this.value)" class="p-4 bg-stone-50 rounded-2xl text-sm font-bold text-stone-500 border-none outline-none">
+                            <option value="Kue">Kue Kering (3 Varian Berat)</option>
+                            <option value="Roti">Roti (1 Harga)</option>
                             <option value="Promo">🔥 PROMO SPESIAL</option>
                         </select>
-                        <input type="text" id="berat" placeholder="500gr" class="p-4 bg-stone-50 rounded-2xl text-sm border-none">
+                        <input type="text" id="berat-manual" placeholder="Isi per box (Pcs)" class="p-4 bg-stone-50 rounded-2xl text-sm border-none">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="number" id="harga" placeholder="Harga Jual" class="p-4 bg-stone-50 rounded-2xl text-sm border-none">
-                        <input type="number" id="stok" placeholder="Stok" class="p-4 bg-stone-50 rounded-2xl text-sm border-none">
+                    <div id="box-harga-biasa" class="hidden">
+                        <input type="number" id="harga" placeholder="Harga Jual Satuan" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none">
+                    </div>
+
+                    <div id="box-harga-kue" class="space-y-2">
+                        <label class="text-[9px] font-bold text-amber-700 uppercase ml-2">Atur Harga Kue Berdasarkan Berat</label>
+                        <input type="number" id="harga250" placeholder="Harga untuk 250 gram" class="w-full p-4 bg-amber-50 rounded-2xl text-sm border-none font-bold">
+                        <input type="number" id="harga500" placeholder="Harga untuk 500 gram" class="w-full p-4 bg-amber-50 rounded-2xl text-sm border-none font-bold">
+                        <input type="number" id="harga1000" placeholder="Harga untuk 1 Kilogram" class="w-full p-4 bg-amber-50 rounded-2xl text-sm border-none font-bold">
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3">
+                        <input type="number" id="stok" placeholder="Stok Tersedia (Pcs/Box)" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none">
                     </div>
 
                     <div class="space-y-1">
-                        <label class="text-[9px] font-bold text-red-500 uppercase ml-2 italic">Harga Coret / Sebelum Diskon (Opsional)</label>
+                        <label class="text-[9px] font-bold text-red-500 uppercase ml-2 italic">Harga Coret (Hanya untuk Roti/Promo)</label>
                         <input type="number" id="harga-coret" placeholder="Masukkan harga lebih tinggi..." class="w-full p-4 promo-input rounded-2xl text-sm border-none focus:ring-2 focus:ring-red-200 font-bold">
                     </div>
 
@@ -136,7 +146,6 @@
     </div>
 
     <script>
-        // --- LOGIKA LOGIN PIN & DEVICE STORAGE ---
         const PIN_AKSES = "yani123";
 
         window.onload = function() {
@@ -165,7 +174,6 @@
             }
         }
 
-        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
           apiKey: "AIzaSyByGpucXRAToCpkTLf9R-k1YqDQ75Zm5_E",
           authDomain: "douceurdeyani.firebaseapp.com",
@@ -177,7 +185,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- DASHBOARD FUNCTIONS ---
+        function cekVarian(val) {
+            const boxBiasa = document.getElementById('box-harga-biasa');
+            const boxKue = document.getElementById('box-harga-kue');
+            if(val === 'Kue') {
+                boxBiasa.classList.add('hidden');
+                boxKue.classList.remove('hidden');
+            } else {
+                boxBiasa.classList.remove('hidden');
+                boxKue.classList.add('hidden');
+            }
+        }
+
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
             const data = doc.data() || { isOpen: true, buka: "07:00", tutup: "21:00", sk: "" };
             const btn = document.getElementById('btn-toggle-toko');
@@ -191,65 +210,59 @@
         });
 
         async function toggleToko() { 
-            // Tambahkan PIN agar diizinkan Firestore Rules
-            await db.collection("pengaturan").doc("toko").set({ 
-                isOpen: !window.statusTGlobal,
-                pin: PIN_AKSES 
-            }, { merge: true }); 
+            await db.collection("pengaturan").doc("toko").set({ isOpen: !window.statusTGlobal, pin: PIN_AKSES }, { merge: true }); 
         }
         
         async function simpanJam() { 
-            // Tambahkan PIN agar diizinkan Firestore Rules
-            await db.collection("pengaturan").doc("toko").set({ 
-                buka: document.getElementById('jam-buka').value, 
-                tutup: document.getElementById('jam-tutup').value,
-                pin: PIN_AKSES
-            }, { merge: true }); 
+            await db.collection("pengaturan").doc("toko").set({ buka: document.getElementById('jam-buka').value, tutup: document.getElementById('jam-tutup').value, pin: PIN_AKSES }, { merge: true }); 
             alert("Jadwal Berhasil Diupdate!");
         }
 
         async function simpanSK() {
             const teksSK = document.getElementById('input-sk').value;
-            // Tambahkan PIN agar diizinkan Firestore Rules
-            await db.collection("pengaturan").doc("toko").set({ 
-                sk: teksSK,
-                pin: PIN_AKSES 
-            }, { merge: true });
+            await db.collection("pengaturan").doc("toko").set({ sk: teksSK, pin: PIN_AKSES }, { merge: true });
             alert("Syarat & Ketentuan Berhasil Diupdate!");
         }
 
         function cekPreview(url) {
             const img = document.getElementById('img-preview');
             const txt = document.getElementById('text-preview');
-            if(url.includes('http')) {
-                img.src = url; img.classList.remove('hidden'); txt.classList.add('hidden');
-            }
+            if(url.includes('http')) { img.src = url; img.classList.remove('hidden'); txt.classList.add('hidden'); }
         }
 
         async function tambahMenu() {
             const btn = document.getElementById('btn-tambah');
-            const link = document.getElementById('link-gambar').value;
+            const jenis = document.getElementById('jenis').value;
             const nama = document.getElementById('nama').value;
-            const harga = document.getElementById('harga').value;
-            const hargaCoretVal = document.getElementById('harga-coret').value; 
+            const link = document.getElementById('link-gambar').value;
+            const stok = document.getElementById('stok').value;
 
-            if(!nama || !harga || !link) return alert("Lengkapi data!");
+            if(!nama || !link || !stok) return alert("Nama, Foto, dan Stok wajib diisi!");
             btn.disabled = true;
 
+            let dataProduk = {
+                nama, jenis, gambar: link, tgl: new Date(), pin: PIN_AKSES,
+                stok: Number(stok),
+                berat: document.getElementById('berat-manual').value
+            };
+
+            if(jenis === 'Kue') {
+                dataProduk.harga250 = "Rp " + Number(document.getElementById('harga250').value).toLocaleString('id-ID');
+                dataProduk.harga500 = "Rp " + Number(document.getElementById('harga500').value).toLocaleString('id-ID');
+                dataProduk.harga1000 = "Rp " + Number(document.getElementById('harga1000').value).toLocaleString('id-ID');
+                dataProduk.harga = dataProduk.harga250; 
+            } else {
+                const hargaInput = document.getElementById('harga').value;
+                const hargaCoretVal = document.getElementById('harga-coret').value;
+                dataProduk.harga = "Rp " + Number(hargaInput).toLocaleString('id-ID');
+                dataProduk.hargaCoret = hargaCoretVal ? "Rp " + Number(hargaCoretVal).toLocaleString('id-ID') : null;
+            }
+
             try {
-                await db.collection("menuToko").add({
-                    nama, jenis: document.getElementById('jenis').value, 
-                    berat: document.getElementById('berat').value,
-                    harga: "Rp " + Number(harga).toLocaleString('id-ID'), 
-                    hargaCoret: hargaCoretVal ? "Rp " + Number(hargaCoretVal).toLocaleString('id-ID') : null,
-                    stok: Number(document.getElementById('stok').value) || 0,
-                    gambar: link, 
-                    tgl: new Date(),
-                    pin: PIN_AKSES // Kirim PIN untuk verifikasi Firestore
-                });
+                await db.collection("menuToko").add(dataProduk);
                 alert("Menu Berhasil Ditambahkan!");
                 location.reload();
-            } catch (e) { alert("Error! Pastikan Firestore Rules sudah diupdate."); btn.disabled = false; }
+            } catch (e) { alert("Error!"); btn.disabled = false; }
         }
 
         db.collection("menuToko").orderBy("tgl", "desc").onSnapshot(snapshot => {
@@ -259,19 +272,19 @@
                 wadah.innerHTML += `
                     <div class="bg-white p-5 rounded-[2.5rem] card-shadow border border-stone-100 flex flex-col gap-4">
                         <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 rounded-2xl bg-stone-100 overflow-hidden border border-stone-100">
+                            <div class="w-16 h-16 rounded-2xl bg-stone-100 overflow-hidden">
                                 <img src="${item.gambar}" class="w-full h-full img-fit" onerror="this.src='https://placehold.co/200x200?text=Error'">
                             </div>
                             <div class="flex-1">
                                 <h4 class="font-black text-stone-800 text-[11px] uppercase">${item.nama}</h4>
-                                <p class="text-[10px] text-amber-800 font-black">${item.harga}</p>
+                                <p class="text-[10px] text-amber-800 font-black">${item.harga} ${item.jenis === 'Kue' ? '(Varian)' : ''}</p>
                             </div>
                             <button onclick="hapusMenu('${doc.id}')" class="text-stone-300 p-2"><i class="fas fa-trash-alt"></i></button>
                         </div>
                         <div class="flex items-center justify-between bg-stone-50 p-2 rounded-2xl border border-stone-100">
-                            <button onclick="updateStok('${doc.id}', -1)" class="w-12 h-12 bg-white rounded-xl shadow-sm text-stone-400 flex items-center justify-center border border-stone-100"><i class="fas fa-minus"></i></button>
+                            <button onclick="updateStok('${doc.id}', -1)" class="w-12 h-12 bg-white rounded-xl shadow-sm text-stone-400 border border-stone-100"><i class="fas fa-minus"></i></button>
                             <div class="text-center"><p class="text-[8px] font-black text-stone-300 uppercase">Stok</p><p class="text-sm font-black text-stone-800">${item.stok}</p></div>
-                            <button onclick="updateStok('${doc.id}', 1)" class="w-12 h-12 bg-stone-800 rounded-xl shadow-lg text-white flex items-center justify-center"><i class="fas fa-plus"></i></button>
+                            <button onclick="updateStok('${doc.id}', 1)" class="w-12 h-12 bg-stone-800 rounded-xl shadow-lg text-white"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>`;
             });
@@ -281,28 +294,10 @@
             const docRef = db.collection("menuToko").doc(id);
             const doc = await docRef.get();
             let stokBaru = (Number(doc.data().stok) || 0) + change;
-            if(stokBaru >= 0) {
-                // Tambahkan PIN agar diizinkan Firestore Rules
-                await docRef.update({ 
-                    stok: stokBaru,
-                    pin: PIN_AKSES 
-                });
-            }
+            if(stokBaru >= 0) { await docRef.update({ stok: stokBaru, pin: PIN_AKSES }); }
         }
 
-        async function hapusMenu(id) { 
-            // Untuk hapus, karena kita tidak bisa menyertakan PIN dalam request DELETE biasa, 
-            // Kita gunakan cara 'update' status menjadi terhapus atau biarkan sementara jika rules DELETE diaktifkan via Auth.
-            // Namun untuk sistem PIN ini, kita gunakan rules WRITE yang mengcover UPDATE.
-            if(confirm("Hapus?")) {
-                try {
-                    // Kita kirim PIN lewat update data sebelum hapus (opsional) atau biarkan rules mendeteksi PIN.
-                    await db.collection("menuToko").doc(id).delete();
-                } catch(e) {
-                    alert("Gagal menghapus! Cek konfigurasi Rules.");
-                }
-            }
-        }
+        async function hapusMenu(id) { if(confirm("Hapus?")) await db.collection("menuToko").doc(id).delete(); }
     </script>
 </body>
 </html>
