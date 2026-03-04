@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Douceur De Yani | Menu</title>
+
+    <meta name="theme-color" content="#FDFBF7">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#FDFBF7">
+    <meta name="msapplication-navbutton-color" content="#FDFBF7">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Douceur De Yani | Menu Homemade Terlezat">
+    <meta property="og:description" content="Nikmati kelembutan roti dan kue kering fresh dari dapur Douceur De Yani. Pesan mudah via WhatsApp!">
+    <meta property="og:image" content="https://i.ibb.co.com/BVD8vCfn/03-D9-FB2-B-A141-42-F0-9-F24-4095-B13-D44-EE.png">
+    <meta property="og:url" content="https://douceurdeyani.web.app">
+    <meta property="og:site_name" content="Douceur De Yani">
+
+    <link rel="icon" type="image/png" href="https://i.ibb.co.com/BVD8vCfn/03-D9-FB2-B-A141-42-F0-9-F24-4095-B13-D44-EE.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        html { scroll-behavior: smooth; }
+        input[type="text"], select { font-size: 16px !important; }
+        
+        @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes pulse-green { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+        @keyframes skeleton-loading { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .animate-slide-up { animation: slide-up 0.3s ease-out; }
+        .animate-fade-in { animation: fade-in-up 0.5s ease-out forwards; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .sold-out-img { filter: grayscale(100%) blur(1px); opacity: 0.6; }
+        .status-dot { width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%; animation: pulse-green 2s infinite; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(15px) !important; }
+        
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+        
+        .badge-diskon { animation: pulse-red 1.5s infinite; background: #ef4444; color: white; padding: 4px 10px; border-radius: 8px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
+        .review-badge { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); }
+        .marquee-container { overflow: hidden; white-space: nowrap; background: #FFF9EB; border-bottom: 1px solid #FEF3C7; }
+        .marquee-text { display: inline-block; animation: marquee 20s linear infinite; font-size: 10px; font-weight: bold; color: #92400e; padding: 8px 0; text-transform: uppercase; letter-spacing: 1px; }
+
+        #toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 350px; }
+        .toast { background: #1c1917; color: white; padding: 12px 20px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; animation: slide-up 0.3s ease-out; }
+    </style>
+</head>
+<body id="main-body" class="bg-[#FDFBF7] pb-32 font-sans overflow-x-hidden">
+
+    <div id="toast-container"></div>
+
+    <div id="app-container">
+        <nav class="p-5 bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-[100] flex items-center justify-between border-b border-stone-100">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://i.ibb.co.com/BVD8vCfn/03-D9-FB2-B-A141-42-F0-9-F24-4095-B13-D44-EE.png" alt="Logo" class="w-10 h-10 rounded-full object-cover border border-stone-100 shadow-sm">
+                    <div class="absolute -bottom-0.5 -right-0.5 status-dot border-2 border-white"></div>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-xs font-black tracking-[0.2em] text-stone-800 uppercase leading-none">Douceur De Yani</h1>
+                    <p class="text-[7px] tracking-[0.2em] text-amber-700 mt-1 uppercase font-bold italic">Homemade Choice</p>
+                </div>
+            </div>
+            <button onclick="toggleCart()" class="relative p-2.5 bg-stone-50 rounded-full text-stone-700 active:scale-90 transition-transform border border-stone-100">
+                <i class="fas fa-shopping-basket text-lg"></i>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span>
+            </button>
+        </nav>
+
+        <div class="marquee-container">
+            <div class="marquee-text">✨ SELAMAT DATANG DI TOKO Douceur De Yani • PROMO SPESIAL: Cek kue dengan tanda "Diskon Tipis" • Best Seller Terlaris Minggu Ini • Dengan rasa dan kualitas premium • saran dan kritik sangat berarti buat kami • Kami selalu menjaga Kualitas Homemade & Fresh Bake di setiap Pesanan anda✨</div>
+        </div>
+
+        <div id="konten-toko">
+            <div class="px-6 mt-8 max-w-md mx-auto space-y-4">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-stone-300 text-sm"></i>
+                    <input type="text" id="input-cari" onkeyup="filterMenu()" placeholder="Cari kue favoritmu..." 
+                        class="w-full pl-12 pr-4 py-4 bg-white border border-stone-100 rounded-[1.5rem] shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-amber-100 transition-all">
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-start">
+                    <button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>
+                    <button onclick="filterKategori('Promo', this)" class="btn-filter bg-white text-red-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-500 shadow-sm transition-all whitespace-nowrap">🔥 Promo</button>
+                    <button onclick="filterKategori('Roti', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Roti</button>
+                    <button onclick="filterKategori('Kue', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Kue Kering</button>
+                </div>
+            </div>
+
+            <div class="py-12 px-8 text-center">
+                <h2 class="text-3xl italic text-stone-700 font-serif leading-tight">Kelembutan & kualitas adalah prioritas <br><span class="not-italic font-bold text-stone-800">Untuk Anda</span></h2>
+                <div class="w-12 h-[2px] bg-amber-700 mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            <div id="daftar-roti" class="px-6 space-y-8 max-w-md mx-auto min-h-[400px]">
+                <div class="skeleton-wrapper space-y-8">
+                    <div class="bg-white rounded-[2rem] p-6 space-y-4 border border-stone-50">
+                        <div class="skeleton h-64 w-full rounded-2xl"></div>
+                        <div class="skeleton h-6 w-3/4 mx-auto rounded"></div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="mt-20 py-12 px-8 bg-stone-100 text-stone-500 border-t border-stone-200 text-center">
+                <div class="max-w-md mx-auto space-y-6">
+                    <div class="text-stone-800 font-black tracking-tighter text-xl italic uppercase">DOUCEUR DE YANI</div>
+                    <div class="flex flex-col gap-3 text-[11px] font-medium uppercase tracking-widest">
+                        <div class="flex items-center justify-center gap-2">
+                            <i class="fas fa-envelope text-amber-800"></i>
+                            <span>douceurdeyanis@gmail.com</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i class="fab fa-instagram text-amber-800"></i>
+                            <a href="https://instagram.com/douceurdeyani" target="_blank">@douceurdeyani</a>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i class="fas fa-map-marker-alt text-amber-800"></i>
+                            <span>Palembang, Indonesia</span>
+                        </div>
+                    </div>
+                    <p class="text-[9px] pt-4 border-t border-stone-200 opacity-50 uppercase font-bold">&copy; 2024 Douceur De Yani - Handmade with love</p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <div id="layer-tutup" class="fixed inset-0 bg-[#FDFBF7] z-[999] hidden flex flex-col items-center justify-center p-10 text-center">
+        <div class="text-4xl font-black mb-6 tracking-tighter italic text-stone-800 uppercase">DOUCEUR DE YANI</div>
+        <h1 id="judul-tutup" class="text-2xl font-bold text-stone-800 uppercase tracking-[0.2em]">Toko Sedang Tutup</h1>
+        <p id="pesan-tutup" class="text-stone-500 mt-4 text-sm italic leading-relaxed"></p>
+        <a href="https://instagram.com/douceurdeyani" class="mt-10 px-8 py-3 bg-stone-800 text-white rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">Ikuti Instagram</a>
+    </div>
+
+    <button id="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-24 right-6 bg-white/90 backdrop-blur-md border border-stone-200 p-4 rounded-full shadow-lg text-amber-800 opacity-0 pointer-events-none z-[90] active:scale-90 transition-all"><i class="fas fa-chevron-up"></i></button>
+
+    <div id="modal-cart" class="fixed inset-0 bg-black/60 hidden flex items-end justify-center z-[1000] px-4 pb-4">
+        <div class="glass-morphism w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-slide-up relative mb-2">
+            <div class="flex justify-between items-center mb-6 border-b border-stone-200/50 pb-4">
+                <div class="flex flex-col">
+                    <h3 class="font-bold text-stone-800 uppercase tracking-widest text-sm">Pesanan Anda</h3>
+                    <button onclick="resetKeranjang()" class="text-[9px] text-red-500 uppercase font-bold text-left mt-1">Hapus Semua</button>
+                </div>
+                <button onclick="toggleCart()" class="text-stone-400 p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <input type="text" id="nama-pembeli" placeholder="Nama Anda..." class="w-full mb-4 p-4 bg-white border border-stone-100 rounded-2xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
+            <div id="cart-items" class="space-y-4 max-h-[30vh] overflow-y-auto mb-4 pr-2 scrollbar-hide"></div>
+            <div class="border-t border-stone-200/50 pt-4 mb-6 flex justify-between items-center px-2">
+                <span class="text-xs font-bold text-stone-500 uppercase">Total Belanja</span>
+                <span id="total-harga-keranjang" class="text-lg font-black text-amber-800">Rp 0</span>
+            </div>
+            <button onclick="bukaSK('keranjang')" class="w-full bg-green-600 text-white py-5 rounded-2xl text-[11px] font-bold tracking-widest uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+                <i class="fab fa-whatsapp text-xl"></i> LANJUT PESAN
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-sk" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[1100] px-6">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-slide-up">
+            <div class="text-center mb-6 border-b pb-4">
+                <h3 class="font-black text-stone-800 uppercase tracking-widest text-sm italic">Konfirmasi S&K</h3>
+            </div>
+            <div id="teks-sk-pelanggan" class="text-[11px] text-stone-600 space-y-3 mb-8 leading-relaxed max-h-[30vh] overflow-y-auto scrollbar-hide">
+                Memuat aturan toko...
+            </div>
+            <label class="flex items-center gap-3 mb-8 cursor-pointer group">
+                <input type="checkbox" id="check-setuju" onchange="cekSetuju()" class="w-5 h-5 rounded border-stone-300 text-amber-800 focus:ring-amber-500 transition-all">
+                <span class="text-[10px] font-bold text-stone-500 uppercase tracking-wider group-hover:text-stone-800 transition-colors">Saya Setuju & Paham</span>
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="tutupSK()" class="py-4 rounded-full text-[9px] font-bold uppercase text-stone-400 border border-stone-100">Batal</button>
+                <button id="btn-lanjut-wa" onclick="eksekusiPesan()" disabled class="bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none transition-all shadow-md">Hubungi Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi Firebase
+        const firebaseConfig = { apiKey: "AIzaSyByGpucXRAToCpkTLf9R-k1YqDQ75Zm5_E", authDomain: "douceurdeyani.firebaseapp.com", projectId: "douceurdeyani", storageBucket: "douceurdeyani.firebasestorage.app", messagingSenderId: "349596738343", appId: "1:349596738343:web:a2ab4e333b42a68b3fbf02" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let keranjang = [];
+        let semuaMenu = [];
+        let kategoriSekarang = 'Semua';
+
+        // Variabel penampung data pesanan sementara
+        let orderType = ''; // 'keranjang' atau 'kilat'
+        let kilatDataTemp = null;
+        let namaPelangganTemp = "";
+
+        // 1. Sinkronisasi Status Toko & S&K
+        db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
+            const data = doc.data();
+            if (!data) return;
+
+            // Update Teks S&K dari Firebase
+            if (data.sk) {
+                const wadahSK = document.getElementById('teks-sk-pelanggan');
+                wadahSK.innerHTML = data.sk.split('\n').map(line => `<p>${line}</p>`).join('');
+            }
+
+            const sekarang = new Date();
+            const jamSekarang = sekarang.getHours().toString().padStart(2, '0') + ":" + sekarang.getMinutes().toString().padStart(2, '0');
+            const jamBuka = data.buka || "00:00";
+            const jamTutup = data.tutup || "23:59";
+            const statusManual = data.isOpen;
+            const isTutupJadwal = jamSekarang < jamBuka || jamSekarang >= jamTutup;
+            const container = document.getElementById('app-container');
+            const layerTutup = document.getElementById('layer-tutup');
+
+            if (statusManual === false || isTutupJadwal) {
+                container.classList.add('hidden');
+                layerTutup.classList.remove('hidden');
+                document.getElementById('judul-tutup').innerText = statusManual === false ? "Toko Sedang Tutup" : "Di Luar Jam Operasional";
+                document.getElementById('pesan-tutup').innerText = statusManual === false ? "Maaf, saat ini Douceur De Yani sedang tidak menerima pesanan." : `Toko buka setiap pukul ${jamBuka} - ${jamTutup}.`;
+            } else {
+                container.classList.remove('hidden');
+                layerTutup.classList.add('hidden');
+            }
+        });
+
+        // 2. Load Data Menu
+        db.collection("menuToko").orderBy("tgl", "desc").onSnapshot((snapshot) => {
+            semuaMenu = [];
+            snapshot.forEach((doc) => { semuaMenu.push({ id: doc.id, ...doc.data() }); });
+            filterMenu();
+        });
+
+        // 3. Helper Functions
+        function showToast(pesan, ikon = 'fa-info-circle') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas ${ikon}"></i> <span>${pesan}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+        }
+
+        function formatRupiah(angka) { return "Rp " + angka.toLocaleString('id-ID'); }
+        function ekstrakHarga(hargaStr) { return parseInt(hargaStr.replace(/[^0-9]/g, '')) || 0; }
+
+        // 4. Render Menu
+        function tampilkanMenu(data) {
+            const wadah = document.getElementById('daftar-roti');
+            wadah.innerHTML = ""; 
+            if(data.length === 0) {
+                wadah.innerHTML = `<div class="text-center py-20 text-stone-400 italic text-sm">Kue tidak ditemukan...</div>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const isHabis = item.stok <= 0;
+                const statusStok = isHabis ? `<span class="text-red-500 font-bold uppercase tracking-widest text-[9px] italic">Habis</span>` : `<span class="text-green-600 font-bold uppercase tracking-widest text-[9px]">Stok: ${item.stok}</span>`;
+                const randomRating = (Math.random() * (5.0 - 4.8) + 4.8).toFixed(1);
+                const isBestSeller = index < 2 && !isHabis;
+                const hargaHtml = item.hargaCoret ? `<span>${item.harga}</span><span class="text-red-300 line-through text-xs ml-2">${item.hargaCoret}</span>` : `<span>${item.harga}</span>`;
+
+                const card = `
+                    <div class="bg-white rounded-[2.5rem] shadow-md border border-stone-50 overflow-hidden relative animate-fade-in group">
+                        <div class="relative overflow-hidden">
+                            <img src="${item.gambar}" loading="lazy" class="w-full h-80 object-cover ${isHabis ? 'sold-out-img' : ''} transition-transform duration-700 group-hover:scale-110">
+                            <div class="absolute top-4 right-4 review-badge px-3 py-1.5 rounded-2xl flex items-center gap-1 shadow-sm">
+                                <i class="fas fa-star text-amber-500 text-[10px]"></i>
+                                <span class="text-[10px] font-black text-stone-700">${randomRating}</span>
+                            </div>
+                            ${isBestSeller ? `<div class="absolute bottom-4 left-4 bg-amber-800 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase shadow-lg">bestseller</div>` : ''}
+                            ${item.hargaCoret && !isHabis ? `<div class="absolute top-16 right-4 badge-diskon">Diskon Tipis</div>` : ''}
+                            ${isHabis ? '<div class="absolute inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"><span class="bg-white/90 text-stone-800 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white">Sold Out</span></div>' : ''}
+                            <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[9px] font-bold text-stone-500 uppercase border border-stone-100">${item.jenis}</div>
+                        </div>
+                        <div class="p-8 text-center">
+                            <h3 class="text-lg font-black text-stone-800 uppercase tracking-widest leading-tight">${item.nama}</h3>
+                            <div class="flex items-center justify-center gap-2 mt-2 mb-4">
+                                ${item.berat ? `<span class="text-[10px] text-stone-400 font-medium">${item.berat}</span>` : ''}
+                                ${item.berat ? `<span class="text-stone-200">|</span>` : ''}
+                                ${statusStok}
+                            </div>
+                            <div class="mb-6 text-amber-900 font-black text-2xl font-serif">${hargaHtml}</div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="tambahKeKeranjang('${item.id}', '${item.nama}', '${item.harga}', '${item.berat}')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Tambah</button>
+                                <button onclick="bukaSK('kilat', {nama:'${item.nama}', harga:'${item.harga}', berat:'${item.berat}'})" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">Beli Kilat</button>
+                            </div>
+                        </div>
+                    </div>`;
+                wadah.innerHTML += card;
+            });
+        }
+
+        // 5. Fitur S&K untuk Beli Kilat & Keranjang
+        function bukaSK(type, data = null) {
+            orderType = type;
+            if (type === 'keranjang') {
+                const nama = document.getElementById('nama-pembeli').value.trim();
+                if(!nama) { showToast("Isi nama dulu ya Kak!", "fa-user-edit"); document.getElementById('nama-pembeli').focus(); return; }
+                if(keranjang.length === 0) return;
+                namaPelangganTemp = nama;
+                toggleCart();
+            } else {
+                kilatDataTemp = data;
+            }
+            document.getElementById('modal-sk').classList.remove('hidden');
+        }
+
+        function tutupSK() {
+            document.getElementById('modal-sk').classList.add('hidden');
+            document.getElementById('check-setuju').checked = false;
+            cekSetuju();
+        }
+
+        function cekSetuju() {
+            const isChecked = document.getElementById('check-setuju').checked;
+            const btn = document.getElementById('btn-lanjut-wa');
+            if(isChecked) {
+                btn.disabled = false;
+                btn.classList.remove('bg-stone-300', 'opacity-50', 'pointer-events-none');
+                btn.classList.add('bg-green-600', 'shadow-lg');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('bg-stone-300', 'opacity-50', 'pointer-events-none');
+                btn.classList.remove('bg-green-600', 'shadow-lg');
+            }
+        }
+
+        function eksekusiPesan() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            let teks = "";
+
+            if (orderType === 'kilat') {
+                let infoBerat = kilatDataTemp.berat ? ` (${kilatDataTemp.berat})` : "";
+                teks = `Halo Admin Douceur De Yani, saya sudah membaca S&K dan ingin pesan langsung:\n\n🍰 *${kilatDataTemp.nama}${infoBerat}*\nHarga: ${kilatDataTemp.harga}\n\nKonfirmasi pesanan saya ya!`;
+            } else {
+                teks = `Halo Admin Douceur De Yani, saya *${namaPelangganTemp}* sudah membaca S&K dan ingin memesan:\n\n`;
+                keranjang.forEach((item, i) => { 
+                    let infoBerat = item.berat ? ` (${item.berat})` : ""; 
+                    teks += `${i+1}. *${item.nama}${infoBerat}* (${item.jumlah}x)\n`; 
+                });
+                teks += `\n💰 *Total: ${document.getElementById('total-harga-keranjang').innerText}*\n\nMohon dicek ya Admin, terima kasih!`;
+            }
+
+            window.location.href = `https://wa.me/6288287111377?text=${encodeURIComponent(teks)}`;
+
+            setTimeout(() => {
+                tutupSK();
+                if(orderType === 'keranjang') {
+                    keranjang = [];
+                    updateUIKeranjang();
+                    document.getElementById('nama-pembeli').value = "";
+                }
+            }, 2000);
+        }
+
+        // 6. Logika Keranjang & UI (Tetap Sama)
+        function tambahKeKeranjang(id, nama, harga, berat) {
+            const dataBarang = semuaMenu.find(item => item.id === id);
+            const stokAsli = Number(dataBarang.stok);
+            const itemDiKeranjang = keranjang.find(i => i.id === id);
+            const jumlahSekarang = itemDiKeranjang ? itemDiKeranjang.jumlah : 0;
+
+            if (jumlahSekarang >= stokAsli) { showToast(`Maaf, stok ${nama} terbatas!`, 'fa-exclamation-triangle'); return; }
+
+            confetti({ particleCount: 60, spread: 40, origin: { y: 0.85 }, colors: ['#78716c', '#b45309', '#f59e0b'] });
+
+            if(itemDiKeranjang) { itemDiKeranjang.jumlah += 1; } 
+            else { keranjang.push({ id, nama, harga, berat, jumlah: 1 }); }
+            
+            showToast(`${nama} ditambahkan!`, 'fa-check-circle');
+            updateUIKeranjang();
+        }
+
+        function filterMenu() {
+            const keyword = document.getElementById('input-cari').value.toLowerCase();
+            const hasilFilter = semuaMenu.filter(item => { 
+                const cocokKategori = (kategoriSekarang === 'Semua' || item.jenis === kategoriSekarang); 
+                return cocokKategori && item.nama.toLowerCase().includes(keyword); 
+            });
+            tampilkanMenu(hasilFilter);
+        }
+
+        function filterKategori(kat, element) {
+            kategoriSekarang = kat;
+            document.querySelectorAll('.btn-filter').forEach(btn => { 
+                btn.classList.replace('bg-stone-800', 'bg-white'); 
+                btn.classList.replace('text-white', 'text-stone-600'); 
+                btn.classList.add('border-stone-100');
+            });
+            element.classList.remove('bg-white', 'text-stone-600', 'border-stone-100'); 
+            element.classList.add('bg-stone-800', 'text-white');
+            filterMenu();
+        }
+
+        function updateUIKeranjang() {
+            const count = document.getElementById('cart-count');
+            const totalLabel = document.getElementById('total-harga-keranjang');
+            const list = document.getElementById('cart-items');
+            let totalDuit = 0;
+            const totalItem = keranjang.reduce((total, item) => total + item.jumlah, 0);
+            
+            count.innerText = totalItem;
+            count.classList.toggle('hidden', keranjang.length === 0);
+
+            if (keranjang.length === 0) {
+                list.innerHTML = `<div class="text-center py-10"><i class="fas fa-shopping-basket text-stone-100 text-5xl mb-3"></i><p class="text-stone-400 text-[10px] italic">Keranjang anda masih kosong...</p></div>`;
+            } else {
+                list.innerHTML = keranjang.map((item, index) => {
+                    totalDuit += (ekstrakHarga(item.harga) * item.jumlah);
+                    return `<div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-stone-100 shadow-sm"><div><div class="font-bold text-stone-800 text-[11px] uppercase tracking-wider">${item.nama}</div><div class="text-[9px] text-stone-400 font-bold mt-0.5">${item.berat ? item.berat + ' | ' : ''}${item.harga} x ${item.jumlah}</div></div><button onclick="hapusItem(${index})" class="text-red-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button></div>`;
+                }).join('');
+            }
+            totalLabel.innerText = formatRupiah(totalDuit);
+        }
+
+        function resetKeranjang() { if(confirm("Yakin mau hapus semua belanjaan?")) { keranjang = []; updateUIKeranjang(); showToast("Keranjang dikosongkan"); } }
+        function hapusItem(index) { keranjang.splice(index, 1); updateUIKeranjang(); }
+        function toggleCart() { document.getElementById('modal-cart').classList.toggle('hidden'); }
+        
+        window.onscroll = function() {
+            const btn = document.getElementById('btn-scroll-top');
+            if (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) { btn.classList.remove('opacity-0', 'pointer-events-none'); btn.classList.add('opacity-100'); } 
+            else { btn.classList.add('opacity-0', 'pointer-events-none'); btn.classList.remove('opacity-100'); }
+        };
+    </script>
+</body>
+</html>
