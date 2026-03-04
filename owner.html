@@ -190,16 +190,31 @@
             window.statusTGlobal = data.isOpen;
         });
 
-        async function toggleToko() { await db.collection("pengaturan").doc("toko").set({ isOpen: !window.statusTGlobal }, { merge: true }); }
+        async function toggleToko() { 
+            // Tambahkan PIN agar diizinkan Firestore Rules
+            await db.collection("pengaturan").doc("toko").set({ 
+                isOpen: !window.statusTGlobal,
+                pin: PIN_AKSES 
+            }, { merge: true }); 
+        }
         
         async function simpanJam() { 
-            await db.collection("pengaturan").doc("toko").set({ buka: document.getElementById('jam-buka').value, tutup: document.getElementById('jam-tutup').value }, { merge: true }); 
+            // Tambahkan PIN agar diizinkan Firestore Rules
+            await db.collection("pengaturan").doc("toko").set({ 
+                buka: document.getElementById('jam-buka').value, 
+                tutup: document.getElementById('jam-tutup').value,
+                pin: PIN_AKSES
+            }, { merge: true }); 
             alert("Jadwal Berhasil Diupdate!");
         }
 
         async function simpanSK() {
             const teksSK = document.getElementById('input-sk').value;
-            await db.collection("pengaturan").doc("toko").set({ sk: teksSK }, { merge: true });
+            // Tambahkan PIN agar diizinkan Firestore Rules
+            await db.collection("pengaturan").doc("toko").set({ 
+                sk: teksSK,
+                pin: PIN_AKSES 
+            }, { merge: true });
             alert("Syarat & Ketentuan Berhasil Diupdate!");
         }
 
@@ -228,11 +243,13 @@
                     harga: "Rp " + Number(harga).toLocaleString('id-ID'), 
                     hargaCoret: hargaCoretVal ? "Rp " + Number(hargaCoretVal).toLocaleString('id-ID') : null,
                     stok: Number(document.getElementById('stok').value) || 0,
-                    gambar: link, tgl: new Date()
+                    gambar: link, 
+                    tgl: new Date(),
+                    pin: PIN_AKSES // Kirim PIN untuk verifikasi Firestore
                 });
                 alert("Menu Berhasil Ditambahkan!");
                 location.reload();
-            } catch (e) { alert("Error!"); btn.disabled = false; }
+            } catch (e) { alert("Error! Pastikan Firestore Rules sudah diupdate."); btn.disabled = false; }
         }
 
         db.collection("menuToko").orderBy("tgl", "desc").onSnapshot(snapshot => {
@@ -264,9 +281,28 @@
             const docRef = db.collection("menuToko").doc(id);
             const doc = await docRef.get();
             let stokBaru = (Number(doc.data().stok) || 0) + change;
-            if(stokBaru >= 0) await docRef.update({ stok: stokBaru });
+            if(stokBaru >= 0) {
+                // Tambahkan PIN agar diizinkan Firestore Rules
+                await docRef.update({ 
+                    stok: stokBaru,
+                    pin: PIN_AKSES 
+                });
+            }
         }
-        async function hapusMenu(id) { if(confirm("Hapus?")) await db.collection("menuToko").doc(id).delete(); }
+
+        async function hapusMenu(id) { 
+            // Untuk hapus, karena kita tidak bisa menyertakan PIN dalam request DELETE biasa, 
+            // Kita gunakan cara 'update' status menjadi terhapus atau biarkan sementara jika rules DELETE diaktifkan via Auth.
+            // Namun untuk sistem PIN ini, kita gunakan rules WRITE yang mengcover UPDATE.
+            if(confirm("Hapus?")) {
+                try {
+                    // Kita kirim PIN lewat update data sebelum hapus (opsional) atau biarkan rules mendeteksi PIN.
+                    await db.collection("menuToko").doc(id).delete();
+                } catch(e) {
+                    alert("Gagal menghapus! Cek konfigurasi Rules.");
+                }
+            }
+        }
     </script>
 </body>
 </html>
