@@ -140,6 +140,28 @@
 
     <button id="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-24 right-6 bg-white/90 backdrop-blur-md border border-stone-200 p-4 rounded-full shadow-lg text-amber-800 opacity-0 pointer-events-none z-[90] active:scale-90 transition-all"><i class="fas fa-chevron-up"></i></button>
 
+    <div id="modal-pilihan" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[2000] px-6">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-slide-up">
+            <h3 id="judul-pilihan" class="font-black text-stone-800 uppercase tracking-widest text-center mb-6 text-sm italic">Atur Pesanan</h3>
+            
+            <div id="area-berat" class="hidden mb-4">
+                <label class="text-[10px] font-bold text-stone-400 uppercase ml-2 mb-2 block tracking-widest">Pilih Berat</label>
+                <select id="pilih-berat" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none focus:ring-2 focus:ring-amber-100 font-bold text-stone-700"></select>
+            </div>
+
+            <div class="mb-6">
+                <label class="text-[10px] font-bold text-stone-400 uppercase ml-2 mb-2 block tracking-widest">Jumlah (Pcs/Box)</label>
+                <input type="number" id="input-qty" value="1" min="1" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none focus:ring-2 focus:ring-amber-100 font-bold text-stone-800">
+                <p id="info-stok-sisa" class="text-[9px] text-amber-700 font-bold mt-2 ml-2 uppercase tracking-tighter"></p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="tutupModalPilihan()" class="py-4 rounded-full text-[9px] font-bold uppercase text-stone-400 border border-stone-100">Batal</button>
+                <button id="btn-konfirmasi-pilihan" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase shadow-md active:scale-95 transition-all">Konfirmasi</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-cart" class="fixed inset-0 bg-black/60 hidden flex items-end justify-center z-[1000] px-4 pb-4">
         <div class="glass-morphism w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-slide-up relative mb-2">
             <div class="flex justify-between items-center mb-6 border-b border-stone-200/50 pb-4">
@@ -189,6 +211,7 @@
         let keranjang = [];
         let semuaMenu = [];
         let kategoriSekarang = 'Semua';
+        let itemAktif = null;
 
         // Variabel penampung data pesanan sementara
         let orderType = ''; // 'keranjang' atau 'kilat'
@@ -200,7 +223,6 @@
             const data = doc.data();
             if (!data) return;
 
-            // Update Teks S&K dari Firebase
             if (data.sk) {
                 const wadahSK = document.getElementById('teks-sk-pelanggan');
                 wadahSK.innerHTML = data.sk.split('\n').map(line => `<p>${line}</p>`).join('');
@@ -244,7 +266,7 @@
         }
 
         function formatRupiah(angka) { return "Rp " + angka.toLocaleString('id-ID'); }
-        function ekstrakHarga(hargaStr) { return parseInt(hargaStr.replace(/[^0-9]/g, '')) || 0; }
+        function ekstrakHarga(hargaStr) { return parseInt(hargaStr.toString().replace(/[^0-9]/g, '')) || 0; }
 
         // 4. Render Menu
         function tampilkanMenu(data) {
@@ -284,8 +306,8 @@
                             </div>
                             <div class="mb-6 text-amber-900 font-black text-2xl font-serif">${hargaHtml}</div>
                             <div class="grid grid-cols-2 gap-3">
-                                <button onclick="tambahKeKeranjang('${item.id}', '${item.nama}', '${item.harga}', '${item.berat}')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Tambah</button>
-                                <button onclick="bukaSK('kilat', {nama:'${item.nama}', harga:'${item.harga}', berat:'${item.berat}'})" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">Beli Kilat</button>
+                                <button onclick="bukaModalPilihan('${item.id}', 'keranjang')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Tambah</button>
+                                <button onclick="bukaModalPilihan('${item.id}', 'kilat')" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">Beli Kilat</button>
                             </div>
                         </div>
                     </div>`;
@@ -293,7 +315,79 @@
             });
         }
 
-        // 5. Fitur S&K untuk Beli Kilat & Keranjang
+        // --- FUNGSI MODAL PILIHAN ---
+        function bukaModalPilihan(id, mode) {
+            itemAktif = semuaMenu.find(i => i.id === id);
+            if (!itemAktif) return;
+
+            document.getElementById('judul-pilihan').innerText = itemAktif.nama;
+            document.getElementById('info-stok-sisa').innerText = `Stok tersedia: ${itemAktif.stok} pcs`;
+            document.getElementById('input-qty').value = 1;
+            
+            const areaBerat = document.getElementById('area-berat');
+            if(itemAktif.jenis === 'Kue') {
+                areaBerat.classList.remove('hidden');
+                const select = document.getElementById('pilih-berat');
+                select.innerHTML = `
+                    <option value="250g">250 Gram - ${itemAktif.harga250 || itemAktif.harga}</option>
+                    <option value="500g">500 Gram - ${itemAktif.harga500 || itemAktif.harga}</option>
+                    <option value="1kg">1 Kilogram - ${itemAktif.harga1000 || itemAktif.harga}</option>
+                `;
+            } else {
+                areaBerat.classList.add('hidden');
+            }
+
+            document.getElementById('modal-pilihan').classList.remove('hidden');
+            document.getElementById('btn-konfirmasi-pilihan').onclick = () => eksekusiPilihan(mode);
+        }
+
+        function tutupModalPilihan() { document.getElementById('modal-pilihan').classList.add('hidden'); }
+
+        function eksekusiPilihan(mode) {
+            const qty = parseInt(document.getElementById('input-qty').value);
+            const beratVal = document.getElementById('pilih-berat').value;
+            
+            if (isNaN(qty) || qty < 1) return showToast("Masukkan jumlah valid!", "fa-exclamation-circle");
+            if (qty > itemAktif.stok) return showToast(`Stok tidak cukup! (Sisa ${itemAktif.stok})`, "fa-warning");
+
+            let hargaFinal = itemAktif.harga;
+            let labelBerat = itemAktif.berat || "";
+
+            if (itemAktif.jenis === 'Kue') {
+                labelBerat = beratVal;
+                if(beratVal === '250g') hargaFinal = itemAktif.harga250;
+                if(beratVal === '500g') hargaFinal = itemAktif.harga500;
+                if(beratVal === '1kg') hargaFinal = itemAktif.harga1000;
+            }
+
+            if (mode === 'kilat') {
+                tutupModalPilihan();
+                const totalKilat = ekstrakHarga(hargaFinal) * qty;
+                bukaSK('kilat', { 
+                    nama: itemAktif.nama, 
+                    harga: hargaFinal, 
+                    berat: labelBerat, 
+                    jumlah: qty,
+                    total: formatRupiah(totalKilat)
+                });
+                return;
+            }
+
+            const idx = keranjang.findIndex(i => i.id === itemAktif.id && i.berat === labelBerat);
+            if(idx > -1) {
+                if(keranjang[idx].jumlah + qty > itemAktif.stok) return showToast("Total melebihi stok!", "fa-warning");
+                keranjang[idx].jumlah += qty;
+            } else {
+                keranjang.push({ id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty });
+            }
+
+            updateUIKeranjang();
+            tutupModalPilihan();
+            showToast(`${qty} ${itemAktif.nama} ditambahkan!`, "fa-check-circle");
+            confetti({ particleCount: 70, origin: { y: 0.8 }, colors: ['#b45309', '#f59e0b', '#78716c'] });
+        }
+
+        // 5. Fitur S&K
         function bukaSK(type, data = null) {
             orderType = type;
             if (type === 'keranjang') {
@@ -308,44 +402,30 @@
             document.getElementById('modal-sk').classList.remove('hidden');
         }
 
-        function tutupSK() {
-            document.getElementById('modal-sk').classList.add('hidden');
-            document.getElementById('check-setuju').checked = false;
-            cekSetuju();
-        }
+        function tutupSK() { document.getElementById('modal-sk').classList.add('hidden'); }
 
         function cekSetuju() {
             const isChecked = document.getElementById('check-setuju').checked;
             const btn = document.getElementById('btn-lanjut-wa');
-            if(isChecked) {
-                btn.disabled = false;
-                btn.classList.remove('bg-stone-300', 'opacity-50', 'pointer-events-none');
-                btn.classList.add('bg-green-600', 'shadow-lg');
-            } else {
-                btn.disabled = true;
-                btn.classList.add('bg-stone-300', 'opacity-50', 'pointer-events-none');
-                btn.classList.remove('bg-green-600', 'shadow-lg');
-            }
+            btn.disabled = !isChecked;
+            btn.className = isChecked ? "bg-green-600 text-white py-4 rounded-full text-[9px] font-bold uppercase shadow-md active:scale-95" : "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none";
         }
 
         function eksekusiPesan() {
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             let teks = "";
-
             if (orderType === 'kilat') {
-                let infoBerat = kilatDataTemp.berat ? ` (${kilatDataTemp.berat})` : "";
-                teks = `Halo Admin Douceur De Yani, saya sudah membaca S&K dan ingin pesan langsung:\n\n🍰 *${kilatDataTemp.nama}${infoBerat}*\nHarga: ${kilatDataTemp.harga}\n\nKonfirmasi pesanan saya ya!`;
+                teks = `Halo Admin Douceur De Yani, saya mau pesan kilat:\n\n🍰 *${kilatDataTemp.nama}*\nDetail: ${kilatDataTemp.berat}\nJumlah: ${kilatDataTemp.jumlah}x\nHarga Satuan: ${kilatDataTemp.harga}\n--------------------------\n💰 *Total: ${kilatDataTemp.total}*\n\nMohon diproses ya!`;
             } else {
-                teks = `Halo Admin Douceur De Yani, saya *${namaPelangganTemp}* sudah membaca S&K dan ingin memesan:\n\n`;
+                teks = `Halo Admin Yani, saya *${namaPelangganTemp}* ingin memesan:\n\n`;
                 keranjang.forEach((item, i) => { 
-                    let infoBerat = item.berat ? ` (${item.berat})` : ""; 
-                    teks += `${i+1}. *${item.nama}${infoBerat}* (${item.jumlah}x)\n`; 
+                    const subtotal = ekstrakHarga(item.harga) * item.jumlah;
+                    teks += `${i+1}. *${item.nama}* (${item.jumlah}x)\nVarian: ${item.berat}\nSubtotal: ${formatRupiah(subtotal)}\n\n`; 
                 });
-                teks += `\n💰 *Total: ${document.getElementById('total-harga-keranjang').innerText}*\n\nMohon dicek ya Admin, terima kasih!`;
+                teks += `--------------------------\n💰 *Total Bayar: ${document.getElementById('total-harga-keranjang').innerText}*`;
             }
-
             window.location.href = `https://wa.me/6288287111377?text=${encodeURIComponent(teks)}`;
-
+            
             setTimeout(() => {
                 tutupSK();
                 if(orderType === 'keranjang') {
@@ -354,24 +434,6 @@
                     document.getElementById('nama-pembeli').value = "";
                 }
             }, 2000);
-        }
-
-        // 6. Logika Keranjang & UI (Tetap Sama)
-        function tambahKeKeranjang(id, nama, harga, berat) {
-            const dataBarang = semuaMenu.find(item => item.id === id);
-            const stokAsli = Number(dataBarang.stok);
-            const itemDiKeranjang = keranjang.find(i => i.id === id);
-            const jumlahSekarang = itemDiKeranjang ? itemDiKeranjang.jumlah : 0;
-
-            if (jumlahSekarang >= stokAsli) { showToast(`Maaf, stok ${nama} terbatas!`, 'fa-exclamation-triangle'); return; }
-
-            confetti({ particleCount: 60, spread: 40, origin: { y: 0.85 }, colors: ['#78716c', '#b45309', '#f59e0b'] });
-
-            if(itemDiKeranjang) { itemDiKeranjang.jumlah += 1; } 
-            else { keranjang.push({ id, nama, harga, berat, jumlah: 1 }); }
-            
-            showToast(`${nama} ditambahkan!`, 'fa-check-circle');
-            updateUIKeranjang();
         }
 
         function filterMenu() {
@@ -406,17 +468,21 @@
             count.classList.toggle('hidden', keranjang.length === 0);
 
             if (keranjang.length === 0) {
-                list.innerHTML = `<div class="text-center py-10"><i class="fas fa-shopping-basket text-stone-100 text-5xl mb-3"></i><p class="text-stone-400 text-[10px] italic">Keranjang anda masih kosong...</p></div>`;
+                list.innerHTML = `<div class="text-center py-10"><i class="fas fa-shopping-basket text-stone-100 text-5xl mb-3"></i><p class="text-stone-400 text-[10px] italic">Keranjang kosong...</p></div>`;
             } else {
                 list.innerHTML = keranjang.map((item, index) => {
-                    totalDuit += (ekstrakHarga(item.harga) * item.jumlah);
-                    return `<div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-stone-100 shadow-sm"><div><div class="font-bold text-stone-800 text-[11px] uppercase tracking-wider">${item.nama}</div><div class="text-[9px] text-stone-400 font-bold mt-0.5">${item.berat ? item.berat + ' | ' : ''}${item.harga} x ${item.jumlah}</div></div><button onclick="hapusItem(${index})" class="text-red-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button></div>`;
+                    const hargaSatuan = ekstrakHarga(item.harga);
+                    totalDuit += (hargaSatuan * item.jumlah);
+                    return `<div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-stone-100 shadow-sm">
+                        <div><p class="font-bold text-stone-800 text-[11px] uppercase">${item.nama}</p><p class="text-[9px] text-stone-400 font-bold">${item.berat} | ${item.jumlah}x</p></div>
+                        <button onclick="hapusItem(${index})" class="text-red-300 p-2"><i class="fas fa-trash-alt"></i></button>
+                    </div>`;
                 }).join('');
             }
             totalLabel.innerText = formatRupiah(totalDuit);
         }
 
-        function resetKeranjang() { if(confirm("Yakin mau hapus semua belanjaan?")) { keranjang = []; updateUIKeranjang(); showToast("Keranjang dikosongkan"); } }
+        function resetKeranjang() { if(confirm("Hapus semua?")) { keranjang = []; updateUIKeranjang(); } }
         function hapusItem(index) { keranjang.splice(index, 1); updateUIKeranjang(); }
         function toggleCart() { document.getElementById('modal-cart').classList.toggle('hidden'); }
         
