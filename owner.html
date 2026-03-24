@@ -117,6 +117,14 @@
                             </datalist>
                         </div>
 
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-bold text-stone-400 uppercase ml-2">Sistem Pemesanan</label>
+                            <select id="sistem-po" class="w-full p-4 bg-stone-50 rounded-2xl text-sm font-bold text-stone-500 border-none outline-none">
+                                <option value="Ready">Ready Stock</option>
+                                <option value="Pre-Order">Pre-Order (PO)</option>
+                            </select>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-3">
                             <select id="jenis" onchange="cekVarian(this.value)" class="p-4 bg-stone-50 rounded-2xl text-sm font-bold text-stone-500 border-none outline-none">
                                 <option value="Kue">Varian Berat (Kue Kering)</option>
@@ -287,6 +295,7 @@
             const btn = document.getElementById('btn-simpan-menu');
             const jenis = document.getElementById('jenis').value, nama = document.getElementById('nama').value, kategoriTema = document.getElementById('kategori-tema').value || 'Reguler'; 
             const linkRaw = document.getElementById('link-gambar').value, stok = document.getElementById('stok').value;
+            const sistemPO = document.getElementById('sistem-po').value; // Mengambil data PO
             const linkArray = linkRaw.split(/,|\n/).map(u => u.trim()).filter(u => u !== "");
 
             if(!nama || linkArray.length === 0 || !stok) return alert("Nama, Foto, dan Stok wajib diisi!");
@@ -294,7 +303,8 @@
 
             let dataProduk = {
                 nama, jenis, kategoriTema, gambar: linkArray, pin: PIN_AKSES,
-                stok: Number(stok), berat: document.getElementById('berat-manual').value
+                stok: Number(stok), berat: document.getElementById('berat-manual').value,
+                sistemPO // Menyimpan status Pre-Order / Ready
             };
 
             if(!editModeId) { dataProduk.tgl = new Date(); dataProduk.terjual = 0; }
@@ -327,6 +337,9 @@
                 let dataGambarAttr = JSON.stringify(arrayGambar).replace(/'/g, "&#39;");
                 let badgeSoldOut = item.stok <= 0 ? `<div class="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-full z-10 shadow-lg">SOLD OUT</div>` : '';
                 let kategoriBadge = item.kategoriTema && item.kategoriTema !== 'Reguler' ? `<span class="bg-amber-100 text-amber-800 text-[8px] px-2 py-0.5 rounded-full font-bold ml-2">${item.kategoriTema}</span>` : '';
+                
+                // Badge PO
+                let poBadge = item.sistemPO === 'Pre-Order' ? `<span class="bg-purple-100 text-purple-700 text-[8px] px-2 py-0.5 rounded-full font-black ml-1 border border-purple-200">PRE-ORDER</span>` : '';
 
                 htmlHTML += `
                     <div class="bg-white p-5 rounded-[2.5rem] card-shadow border ${item.stok <= 0 ? 'border-red-200 bg-red-50/30' : 'border-stone-100'} flex flex-col gap-4">
@@ -336,7 +349,7 @@
                                 <img src="${gambarPertama}" data-images='${dataGambarAttr}' class="w-full h-full img-fit slideshow-img" onerror="this.src='https://placehold.co/200x200?text=Error'">
                             </div>
                             <div class="flex-1">
-                                <h4 class="font-black text-stone-800 text-[11px] uppercase">${item.nama} ${kategoriBadge}</h4>
+                                <h4 class="font-black text-stone-800 text-[11px] uppercase">${item.nama} ${kategoriBadge} ${poBadge}</h4>
                                 <p class="text-[10px] text-amber-800 font-black">${item.harga} ${item.jenis === 'Kue' ? '(Varian)' : ''}</p>
                             </div>
                             <div class="flex flex-col gap-1">
@@ -406,6 +419,7 @@
             const parse = (str) => str ? str.replace(/[^0-9]/g, '') : '';
             document.getElementById('nama').value = item.nama; document.getElementById('jenis').value = item.jenis;
             document.getElementById('stok').value = item.stok; document.getElementById('kategori-tema').value = item.kategoriTema || 'Reguler';
+            document.getElementById('sistem-po').value = item.sistemPO || 'Ready'; // Menyiapkan data PO di form
             document.getElementById('berat-manual').value = item.berat || '';
             document.getElementById('link-gambar').value = Array.isArray(item.gambar) ? item.gambar.join(',\n') : item.gambar;
             cekVarian(item.jenis);
@@ -420,6 +434,7 @@
             editModeId = null; document.getElementById('judul-form-menu').innerText = "Tambah Menu Baru";
             ['nama','link-gambar','stok','harga','harga-coret','harga250','harga500','harga1000','berat-manual','kategori-tema'].forEach(id => document.getElementById(id).value = '');
             cekPreview(''); document.getElementById('jenis').value = 'Kue'; cekVarian('Kue');
+            document.getElementById('sistem-po').value = 'Ready'; // Mereset form PO
             document.getElementById('btn-simpan-menu').innerHTML = "SIMPAN PRODUK"; document.getElementById('btn-batal-edit').classList.add('hidden');
         }
 
