@@ -76,7 +76,7 @@
         </nav>
 
         <div class="marquee-container">
-            <div class="marquee-text">✨ SELAMAT DATANG DI TOKO Douceur De Yani • FIX ORDER WAJIB DP 50% • Batas pengambilan Pick Up maksimal 2 hari • Menjaga Kualitas Homemade & Fresh Bake di setiap pesanan Anda ✨</div>
+            <div class="marquee-text">✨ SELAMAT DATANG DI TOKO Douceur De Yani • FIX ORDER WAJIB DP 50% • Batas minimal pengambilan akan di infokan langsung oleh admin setelah checkout jika pesanan berlabelkan preorder • Menjaga Kualitas Homemade & Fresh Bake di setiap pesanan Anda ✨</div>
         </div>
 
         <div id="konten-toko">
@@ -185,7 +185,7 @@
                     </select>
                     
                     <textarea id="alamat-pembeli" placeholder="Tulis alamat lengkap pengiriman..." class="w-full mt-3 p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none hidden transition-all shadow-sm" rows="2"></textarea>
-                    <p id="info-pickup" class="text-[9px] text-amber-700 font-bold mt-2 italic">* Batas pengambilan maks 2 hari setelah checkout.</p>
+                    <p id="info-pickup" class="text-[9px] text-amber-700 font-bold mt-2 italic">* Batas minimal pengambilan akan di infokan langsung oleh admin setelah checkout jika pesanan berlabelkan preorder.</p>
                 </div>
             </div>
 
@@ -408,13 +408,12 @@
                 if(beratVal === '1kg') hargaFinal = itemAktif.harga1000;
             }
 
-            // UPGRADE UX: Beli Kilat langsung potong jalan masuk ke keranjang utama
             if (mode === 'kilat') {
-                keranjang = []; // Kosongkan keranjang lama
+                keranjang = []; 
                 keranjang.push({ id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty });
                 updateUIKeranjang();
                 tutupModalPilihan();
-                toggleCart(); // Buka form checkout seketika
+                toggleCart(); 
                 return;
             }
 
@@ -442,7 +441,7 @@
             if(keranjang.length === 0) return showToast("Keranjang Anda kosong!", "fa-shopping-basket");
             
             dataPembeliTemp = { nama, wa, metode, alamat };
-            toggleCart(); // Tutup keranjang
+            toggleCart(); 
             
             document.getElementById('modal-sk').classList.remove('hidden');
             document.getElementById('check-setuju').checked = false;
@@ -472,19 +471,16 @@
                     itemUntukDikurangi.push({ id: item.id, qty: item.jumlah });
                 });
 
-                // Kalkulasi DP
                 const dpAngka = totalDuitAngka / 2;
                 
-                // Masukkan info pengiriman ke detail agar tampil di Owner Dashboard
                 detailTeks += `\n📦 Metode: ${dataPembeliTemp.metode}`;
                 if (dataPembeliTemp.metode === 'Kurir') {
                     detailTeks += `\n📍 Alamat: ${dataPembeliTemp.alamat}`;
                 } else {
-                    detailTeks += `\n⚠️ Note: Pick Up maks 2 hari`;
+                    detailTeks += `\n⚠️ Note: Batas minimal pengambilan akan di infokan langsung oleh admin setelah checkout jika pesanan berlabelkan preorder`;
                 }
                 detailTeks += `\n💳 Wajib DP 50%: ${formatRupiah(dpAngka)}`;
 
-                // 1. SIMPAN KE FIREBASE "pesanan"
                 const dataPesanan = {
                     namaPelanggan: dataPembeliTemp.nama,
                     noWA: dataPembeliTemp.wa,
@@ -496,7 +492,6 @@
 
                 await db.collection("pesanan").add(dataPesanan);
 
-                // 2. OTOMATIS KURANGI STOK DI DATABASE "menuToko"
                 for (const item of itemUntukDikurangi) {
                     if (item.id) {
                         const menuRef = db.collection("menuToko").doc(item.id);
@@ -509,7 +504,6 @@
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 showToast("Pesanan Berhasil Dikirim ke Admin!", "fa-check-double");
                 
-                // 3. RESET FORM & TOMBOL
                 setTimeout(() => {
                     tutupSK();
                     keranjang = []; 
