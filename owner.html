@@ -106,22 +106,24 @@
 
                         <input type="text" id="nama" placeholder="Nama Produk..." class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none font-bold">
                         
-                        <div class="space-y-1">
-                            <label class="text-[9px] font-bold text-stone-400 uppercase ml-2">Kategori Tema / Etalase</label>
-                            <input type="text" id="kategori-tema" list="saran-kategori" placeholder="Contoh: Reguler, Hampers Lebaran" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none">
+                        <div class="space-y-1 relative">
+                            <div class="flex justify-between items-center ml-2 mr-1">
+                                <label class="text-[9px] font-bold text-stone-400 uppercase">Kategori Tema / Etalase</label>
+                                <button type="button" onclick="toggleKelolaKategori()" class="text-[9px] font-black text-amber-600 uppercase bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 active:scale-95"><i class="fas fa-cog"></i> Kelola</button>
+                            </div>
+                            <input type="text" id="kategori-tema" list="saran-kategori" placeholder="Pilih atau Ketik Kategori..." class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none">
                             <datalist id="saran-kategori">
-                                <option value="Reguler"></option>
-                                <option value="KUE KERING"></option>
-                                <option value="Spesial Idul Fitri"></option>
-                                <option value="ROTI"></option>
-                                <option value="Spesial Idul Adha"></option>
-                                <option value="Spesial Valentine"></option>
-                                <option value="Spesial Bulan Ramadhan"></option>
-                                <option value="PROMO SPESIAL"></option>
-                                <option value="Promo Akhir Tahun"></option>
-                            </datalist>
-                        </div>
+                                </datalist>
 
+                            <div id="box-kelola-kategori" class="hidden mt-2 p-4 bg-white border border-stone-200 rounded-2xl shadow-sm space-y-3">
+                                <div class="flex gap-2">
+                                    <input type="text" id="input-kategori-baru" placeholder="Kategori Baru..." class="w-full p-3 bg-stone-50 rounded-xl text-xs border-none outline-none">
+                                    <button type="button" onclick="simpanKategoriBaru()" class="bg-amber-800 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <div id="list-kategori-dinamis" class="space-y-2 max-h-40 overflow-y-auto">
+                                    </div>
+                            </div>
+                        </div>
                         <div class="space-y-1">
                             <label class="text-[9px] font-bold text-stone-400 uppercase ml-2">Sistem Pemesanan</label>
                             <select id="sistem-po" class="w-full p-4 bg-stone-50 rounded-2xl text-sm font-bold text-stone-500 border-none outline-none">
@@ -267,6 +269,86 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // ================= SISTEM KELOLA KATEGORI (BARU) =================
+        let daftarKategoriGlobal = [];
+
+        db.collection("pengaturan").doc("kategori").onSnapshot((doc) => {
+            if (doc.exists) {
+                daftarKategoriGlobal = doc.data().daftar || [];
+            } else {
+                // Kategori Default jika belum ada di database
+                daftarKategoriGlobal = ["Reguler", "KUE KERING", "Spesial Idul Fitri", "ROTI", "PROMO SPESIAL"];
+                db.collection("pengaturan").doc("kategori").set({ daftar: daftarKategoriGlobal });
+            }
+            renderKategori();
+        });
+
+        function renderKategori() {
+            const datalist = document.getElementById('saran-kategori');
+            datalist.innerHTML = daftarKategoriGlobal.map(k => `<option value="${k}"></option>`).join('');
+
+            const uiList = document.getElementById('list-kategori-dinamis');
+            if(daftarKategoriGlobal.length === 0) {
+                uiList.innerHTML = `<p class="text-[10px] text-center text-stone-400 italic py-2">Belum ada kategori</p>`;
+            } else {
+                uiList.innerHTML = daftarKategoriGlobal.map(k => `
+                    <div class="flex justify-between items-center bg-stone-50 p-2 rounded-xl border border-stone-100">
+                        <span class="text-xs font-bold text-stone-600">${k}</span>
+                        <div class="flex gap-1">
+                            <button onclick="editKategori('${k}')" class="w-7 h-7 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center text-[10px] active:scale-90 transition-all"><i class="fas fa-pen"></i></button>
+                            <button onclick="hapusKategori('${k}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg flex items-center justify-center text-[10px] active:scale-90 transition-all"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function toggleKelolaKategori() {
+            document.getElementById('box-kelola-kategori').classList.toggle('hidden');
+        }
+
+        async function simpanKategoriBaru() {
+            const input = document.getElementById('input-kategori-baru').value.trim();
+            if(!input) return;
+            if(daftarKategoriGlobal.includes(input)) return alert("Nama kategori sudah ada!");
+            
+            daftarKategoriGlobal.push(input);
+            await db.collection("pengaturan").doc("kategori").set({ daftar: daftarKategoriGlobal }, {merge: true});
+            document.getElementById('input-kategori-baru').value = '';
+        }
+
+        async function hapusKategori(nama) {
+            if(confirm(`Yakin ingin menghapus kategori "${nama}"?`)) {
+                daftarKategoriGlobal = daftarKategoriGlobal.filter(k => k !== nama);
+                await db.collection("pengaturan").doc("kategori").set({ daftar: daftarKategoriGlobal }, {merge: true});
+            }
+        }
+
+        async function editKategori(namaLama) {
+            const namaBaru = prompt("Edit nama kategori:", namaLama);
+            if(namaBaru && namaBaru.trim() !== "" && namaBaru !== namaLama) {
+                if(daftarKategoriGlobal.includes(namaBaru.trim())) return alert("Nama kategori sudah digunakan!");
+                
+                const index = daftarKategoriGlobal.indexOf(namaLama);
+                if(index > -1) {
+                    daftarKategoriGlobal[index] = namaBaru.trim();
+                    await db.collection("pengaturan").doc("kategori").set({ daftar: daftarKategoriGlobal }, {merge: true});
+                    
+                    if(confirm(`Kategori berhasil diubah!\n\nApakah Anda juga ingin otomatis mengubah kategori "${namaLama}" menjadi "${namaBaru}" pada semua produk yang sudah terpasang?`)) {
+                        const menuRef = db.collection("menuToko");
+                        const snapshot = await menuRef.where("kategoriTema", "==", namaLama).get();
+                        const batch = db.batch();
+                        snapshot.forEach(doc => {
+                            batch.update(doc.ref, { kategoriTema: namaBaru.trim() });
+                        });
+                        await batch.commit();
+                        alert(`${snapshot.size} Produk berhasil diperbarui kategorinya!`);
+                    }
+                }
+            }
+        }
+        // ==============================================================
+
         function cekVarian(val) {
             const boxBiasa = document.getElementById('box-harga-biasa'), boxKue = document.getElementById('box-harga-kue'), boxCoret = document.getElementById('box-harga-coret'); 
             if(val === 'Kue') { boxBiasa.classList.add('hidden'); boxCoret.classList.add('hidden'); boxKue.classList.remove('hidden'); } 
@@ -312,13 +394,11 @@
                 sistemPO 
             };
 
-            // FIX: Penggunaan serverTimestamp bawaan dari firebase agar akurat terurut
             if(!editModeId) { 
                 dataProduk.tgl = firebase.firestore.FieldValue.serverTimestamp(); 
                 dataProduk.terjual = 0; 
             }
 
-            // FIX: Tambahan fallback '|| 0' agar tidak menyebabkan bug (Rp NaN) jika ada form yang tidak terisi 
             if(jenis === 'Kue') {
                 dataProduk.harga250 = "Rp " + (Number(document.getElementById('harga250').value) || 0).toLocaleString('id-ID');
                 dataProduk.harga500 = "Rp " + (Number(document.getElementById('harga500').value) || 0).toLocaleString('id-ID');
@@ -445,7 +525,6 @@
             document.getElementById('btn-simpan-menu').innerHTML = "SIMPAN PRODUK"; document.getElementById('btn-batal-edit').classList.add('hidden');
         }
 
-        // FIX: Perbaikan mekanisme penambahan Stok agar aman untuk jaringan (mencegah bentrok data minus)
         async function updateStok(id, change) {
             const docRef = db.collection("menuToko").doc(id); 
             const doc = await docRef.get();
@@ -456,8 +535,6 @@
         
         async function hapusMenu(id) { if(confirm("Hapus menu ini?")) await db.collection("menuToko").doc(id).delete(); }
 
-        // ================= SISTEM PESANAN PENUH =================
-        // FIX: Logika Otomatis Menambah Jumlah "Terjual" (Best Seller)
         async function updateStatusPesanan(id, statusBaru) {
             if(confirm(`Ubah status pesanan menjadi ${statusBaru}?`)) {
                 try {
@@ -467,7 +544,6 @@
                         const docRef = await db.collection("pesanan").doc(id).get();
                         const order = docRef.data();
                         
-                        // Sistem memindai teks pesanan untuk meng-update menu "Terlaris" secara akurat
                         if (order && order.detailPesanan) {
                             const baris = order.detailPesanan.split('\n');
                             const menusSnapshot = await db.collection("menuToko").get();
@@ -577,7 +653,6 @@
 
                 let waPesan = encodeURIComponent(templatePesan);
 
-                // FIX: Menambahkan class 'whitespace-pre-line' pada div text agar Rincian Pesanan Enter-nya tidak nyambung kesamping
                 orderHtml += `
                     <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative">
                         <button onclick="hapusPesanan('${doc.id}')" class="absolute top-4 right-4 text-stone-300 hover:text-red-500 transition-colors"><i class="fas fa-times"></i></button>
