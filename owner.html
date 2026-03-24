@@ -295,7 +295,7 @@
             const btn = document.getElementById('btn-simpan-menu');
             const jenis = document.getElementById('jenis').value, nama = document.getElementById('nama').value, kategoriTema = document.getElementById('kategori-tema').value || 'Reguler'; 
             const linkRaw = document.getElementById('link-gambar').value, stok = document.getElementById('stok').value;
-            const sistemPO = document.getElementById('sistem-po').value; // Mengambil data PO
+            const sistemPO = document.getElementById('sistem-po').value;
             const linkArray = linkRaw.split(/,|\n/).map(u => u.trim()).filter(u => u !== "");
 
             if(!nama || linkArray.length === 0 || !stok) return alert("Nama, Foto, dan Stok wajib diisi!");
@@ -304,7 +304,7 @@
             let dataProduk = {
                 nama, jenis, kategoriTema, gambar: linkArray, pin: PIN_AKSES,
                 stok: Number(stok), berat: document.getElementById('berat-manual').value,
-                sistemPO // Menyimpan status Pre-Order / Ready
+                sistemPO 
             };
 
             if(!editModeId) { dataProduk.tgl = new Date(); dataProduk.terjual = 0; }
@@ -338,7 +338,6 @@
                 let badgeSoldOut = item.stok <= 0 ? `<div class="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-full z-10 shadow-lg">SOLD OUT</div>` : '';
                 let kategoriBadge = item.kategoriTema && item.kategoriTema !== 'Reguler' ? `<span class="bg-amber-100 text-amber-800 text-[8px] px-2 py-0.5 rounded-full font-bold ml-2">${item.kategoriTema}</span>` : '';
                 
-                // Badge PO
                 let poBadge = item.sistemPO === 'Pre-Order' ? `<span class="bg-purple-100 text-purple-700 text-[8px] px-2 py-0.5 rounded-full font-black ml-1 border border-purple-200">PRE-ORDER</span>` : '';
 
                 htmlHTML += `
@@ -367,7 +366,6 @@
             wadah.innerHTML = htmlHTML;
         });
 
-        // Laporan Keuangan
         db.collection("pesanan").onSnapshot(snapshot => {
             let totalOmzet = 0, totalPesananSelesai = 0;
             snapshot.forEach(doc => {
@@ -378,7 +376,6 @@
             document.getElementById('teks-pesanan-selesai').innerText = totalPesananSelesai;
         });
 
-        // Laporan Terlaris
         db.collection("menuToko").orderBy("terjual", "desc").limit(5).onSnapshot(snapshot => {
             const wadahTerlaris = document.getElementById('list-terlaris');
             let htmlTerlaris = '', rank = 1;
@@ -419,7 +416,7 @@
             const parse = (str) => str ? str.replace(/[^0-9]/g, '') : '';
             document.getElementById('nama').value = item.nama; document.getElementById('jenis').value = item.jenis;
             document.getElementById('stok').value = item.stok; document.getElementById('kategori-tema').value = item.kategoriTema || 'Reguler';
-            document.getElementById('sistem-po').value = item.sistemPO || 'Ready'; // Menyiapkan data PO di form
+            document.getElementById('sistem-po').value = item.sistemPO || 'Ready'; 
             document.getElementById('berat-manual').value = item.berat || '';
             document.getElementById('link-gambar').value = Array.isArray(item.gambar) ? item.gambar.join(',\n') : item.gambar;
             cekVarian(item.jenis);
@@ -434,7 +431,7 @@
             editModeId = null; document.getElementById('judul-form-menu').innerText = "Tambah Menu Baru";
             ['nama','link-gambar','stok','harga','harga-coret','harga250','harga500','harga1000','berat-manual','kategori-tema'].forEach(id => document.getElementById(id).value = '');
             cekPreview(''); document.getElementById('jenis').value = 'Kue'; cekVarian('Kue');
-            document.getElementById('sistem-po').value = 'Ready'; // Mereset form PO
+            document.getElementById('sistem-po').value = 'Ready'; 
             document.getElementById('btn-simpan-menu').innerHTML = "SIMPAN PRODUK"; document.getElementById('btn-batal-edit').classList.add('hidden');
         }
 
@@ -471,13 +468,11 @@
             snapshot.forEach(doc => {
                 const order = doc.data();
                 
-                // --- MESIN PEMBERSIH NOMOR WA ---
                 let nomorWABersih = order.noWA || "";
                 nomorWABersih = nomorWABersih.replace(/\D/g, ''); 
                 if (nomorWABersih.startsWith('0')) {
                     nomorWABersih = '62' + nomorWABersih.substring(1);
                 }
-                // --------------------------------
 
                 let waktuTeks = order.waktuOrder ? (order.waktuOrder.toDate ? order.waktuOrder.toDate().toLocaleString('id-ID', {day: 'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : "Waktu tdk diketahui") : "Baru saja";
 
@@ -494,7 +489,51 @@
                     tombolAksi = `<button disabled class="flex-1 bg-stone-100 text-stone-400 py-2 rounded-xl text-[9px] font-black uppercase border border-stone-200">Pesanan Selesai</button>`;
                 }
 
-                let waPesan = encodeURIComponent(`Halo kak ${order.namaPelanggan}, pesanan dari Douceur De Yani sedang kami proses ya. Terima kasih!`);
+                // ==============================
+                // FORMAT PESAN WA KE PELANGGAN
+                // ==============================
+                const totalHargaAsli = order.totalHarga || 0;
+                const dpHargaAsli = totalHargaAsli / 2;
+                const totalFormat = totalHargaAsli.toLocaleString('id-ID');
+                const dpFormat = dpHargaAsli.toLocaleString('id-ID');
+
+                // Kita cari tau metode pengiriman dari detail pesanan
+                let metodeKirim = "Pick Up";
+                let alamatKirim = "";
+                if (order.detailPesanan.includes("📦 Metode: Kurir")) {
+                    metodeKirim = "Kurir";
+                    // Mencari baris alamat dengan Regex
+                    const matchAlamat = order.detailPesanan.match(/📍 Alamat: (.*)/);
+                    if (matchAlamat) {
+                        alamatKirim = matchAlamat[1];
+                    }
+                }
+
+                // Ambil daftar barang pesanan (hilangkan baris metode, note, dll)
+                let barisDetail = order.detailPesanan.split('\n');
+                let barangSaja = "";
+                for (let baris of barisDetail) {
+                    if (baris.startsWith("📦") || baris.startsWith("📍") || baris.startsWith("⚠️") || baris.startsWith("💳") || baris.trim() === "") {
+                        continue;
+                    }
+                    barangSaja += baris + "\n";
+                }
+
+                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sedang kami proses ya 😊\n\n`;
+                templatePesan += `*Rincian Pesanan:*\n${barangSaja}\n`;
+                
+                if (metodeKirim === 'Kurir') {
+                    templatePesan += `*Metode:* Pengiriman via Kurir\n*Alamat:* ${alamatKirim}\n\n`;
+                } else {
+                    templatePesan += `*Metode:* Ambil Sendiri (Pick Up)\n\n`;
+                }
+
+                templatePesan += `*Total Tagihan:* Rp ${totalFormat}\n`;
+                templatePesan += `*Minimal DP (50%):* Rp ${dpFormat}\n\n`;
+                templatePesan += `_Sebelum melanjutkan proses pesanan, mohon melakukan pembayaran wajib DP 50% terlebih dahulu ya kak._\n\nTerima kasih banyak! 🙏`;
+
+                let waPesan = encodeURIComponent(templatePesan);
+                // ==============================
 
                 orderHtml += `
                     <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative">
