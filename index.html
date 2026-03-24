@@ -302,9 +302,8 @@
 
         function renderFilterKategori() {
             const wadah = document.getElementById('container-filter');
+            // Menghapus baris tombol "Roti Pcs" dan "Kue Kering" sesuai permintaan
             let html = `<button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>`;
-            html += `<button onclick="filterKategori('Roti', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Roti Pcs</button>`;
-            html += `<button onclick="filterKategori('Kue', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Kue Kering</button>`;
 
             daftarKategoriTema.forEach(kat => {
                 html += `<button onclick="filterKategori('${kat}', this)" class="btn-filter bg-amber-50 text-amber-800 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-200 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-star text-[8px] mr-1"></i> ${kat}</button>`;
@@ -541,7 +540,7 @@
             const hasilFilter = semuaMenu.filter(item => { 
                 let cocokKategori = false;
                 if(kategoriSekarang === 'Semua') cocokKategori = true;
-                else if(kategoriSekarang === 'Roti' || kategoriSekarang === 'Kue') cocokKategori = (item.jenis === kategoriSekarang);
+                // Tombol "Roti" dan "Kue" statis sudah dihapus, sekarang filter membaca dari Kategori Tema
                 else cocokKategori = (item.kategoriTema === kategoriSekarang); 
 
                 return cocokKategori && item.nama.toLowerCase().includes(keyword); 
