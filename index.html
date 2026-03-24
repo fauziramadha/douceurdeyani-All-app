@@ -206,23 +206,21 @@
     </div>
 
     <script>
-        // Inisialisasi Firebase (SAMA SEPERTI APLIKASI OWNER)
+        // Inisialisasi Firebase
         const firebaseConfig = { apiKey: "AIzaSyByGpucXRAToCpkTLf9R-k1YqDQ75Zm5_E", authDomain: "douceurdeyani.firebaseapp.com", projectId: "douceurdeyani", storageBucket: "douceurdeyani.firebasestorage.app", messagingSenderId: "349596738343", appId: "1:349596738343:web:a2ab4e333b42a68b3fbf02" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let keranjang = [];
         let semuaMenu = [];
-        let daftarKategoriTema = new Set(); // Menyimpan kategori yang aktif
+        let daftarKategoriTema = new Set();
         let kategoriSekarang = 'Semua';
         let itemAktif = null;
 
-        // Penampung data
         let orderType = ''; 
         let kilatDataTemp = null;
         let dataPembeliTemp = { nama: "", wa: "" };
 
-        // 1. Sinkronisasi Status Toko & S&K
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
             const data = doc.data();
             if (!data) return;
@@ -248,7 +246,6 @@
             }
         });
 
-        // 2. Load Data Menu (TERMASUK KATEGORI TEMA & MULTI FOTO)
         db.collection("menuToko").orderBy("tgl", "desc").onSnapshot((snapshot) => {
             semuaMenu = [];
             daftarKategoriTema.clear();
@@ -256,7 +253,6 @@
             snapshot.forEach((doc) => { 
                 const data = doc.data();
                 semuaMenu.push({ id: doc.id, ...data }); 
-                // Kumpulkan kategori
                 if(data.kategoriTema && data.kategoriTema !== 'Reguler') {
                     daftarKategoriTema.add(data.kategoriTema);
                 }
@@ -265,7 +261,6 @@
             filterMenu();
         });
 
-        // 3. Helper
         function showToast(pesan, ikon = 'fa-info-circle') {
             const container = document.getElementById('toast-container'); const toast = document.createElement('div');
             toast.className = 'toast'; toast.innerHTML = `<i class="fas ${ikon}"></i> <span>${pesan}</span>`;
@@ -275,22 +270,18 @@
         function formatRupiah(angka) { return "Rp " + angka.toLocaleString('id-ID'); }
         function ekstrakHarga(hargaStr) { return parseInt(hargaStr.toString().replace(/[^0-9]/g, '')) || 0; }
 
-        // Render Filter Dinamis dari Database
         function renderFilterKategori() {
             const wadah = document.getElementById('container-filter');
             let html = `<button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>`;
-            
             html += `<button onclick="filterKategori('Roti', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Roti Pcs</button>`;
             html += `<button onclick="filterKategori('Kue', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Kue Kering</button>`;
 
-            // Render kategori tema yang aktif (misal: Hampers)
             daftarKategoriTema.forEach(kat => {
                 html += `<button onclick="filterKategori('${kat}', this)" class="btn-filter bg-amber-50 text-amber-800 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-200 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-star text-[8px] mr-1"></i> ${kat}</button>`;
             });
             wadah.innerHTML = html;
         }
 
-        // 4. Render Menu
         function tampilkanMenu(data) {
             const wadah = document.getElementById('daftar-roti'); wadah.innerHTML = ""; 
             if(data.length === 0) {
@@ -303,7 +294,6 @@
                 const isBestSeller = index < 2 && !isHabis;
                 const hargaHtml = item.hargaCoret ? `<span>${item.harga}</span><span class="text-red-300 line-through text-xs ml-2">${item.hargaCoret}</span>` : `<span>${item.harga}</span>`;
                 
-                // MULTI FOTO SLIDESHOW LOGIC
                 let arrayGambar = Array.isArray(item.gambar) ? item.gambar : [item.gambar];
                 let gambarPertama = arrayGambar[0];
                 let dataGambarAttr = JSON.stringify(arrayGambar).replace(/'/g, "&#39;");
@@ -338,7 +328,6 @@
             });
         }
 
-        // Script Slideshow Otomatis
         setInterval(() => {
             document.querySelectorAll('.slideshow-img').forEach(img => {
                 try {
@@ -352,7 +341,6 @@
             });
         }, 2000);
 
-        // --- FUNGSI MODAL PILIHAN ---
         function bukaModalPilihan(id, mode) {
             itemAktif = semuaMenu.find(i => i.id === id);
             if (!itemAktif) return;
@@ -410,7 +398,6 @@
             confetti({ particleCount: 70, origin: { y: 0.8 }, colors: ['#b45309', '#f59e0b', '#78716c'] });
         }
 
-        // 5. Fitur S&K
         function bukaSK(type, data = null) {
             orderType = type;
             if (type === 'keranjang') {
@@ -422,7 +409,6 @@
                 dataPembeliTemp = { nama: nama, wa: wa };
                 toggleCart();
             } else {
-                // Untuk Beli Kilat, minta nama dulu via prompt sederhana (Bisa diperbagus nanti)
                 const inputNama = prompt("Masukkan Nama Anda:");
                 const inputWA = prompt("Masukkan Nomor WhatsApp Anda (08xxx):");
                 if(!inputNama || !inputWA) return showToast("Pesanan kilat dibatalkan (Data kosong).", "fa-times");
@@ -441,7 +427,7 @@
             btn.disabled = !isChecked; btn.className = isChecked ? "bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95" : "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none";
         }
 
-        // ===== FUNGSI INTI: KIRIM KE DATABASE OWNER =====
+        // ===== FUNGSI INTI: KIRIM KE DATABASE OWNER & KURANGI STOK =====
         async function prosesKeDatabase() {
             const btn = document.getElementById('btn-lanjut-wa');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...';
@@ -450,18 +436,23 @@
             try {
                 let detailTeks = "";
                 let totalDuitAngka = 0;
+                let itemUntukDikurangi = []; // Penampung untuk mengurangi stok
 
                 if (orderType === 'kilat') {
                     detailTeks = `1x ${kilatDataTemp.nama} (${kilatDataTemp.berat}) - ${kilatDataTemp.jumlah} Pcs`;
                     totalDuitAngka = kilatDataTemp.totalAngka;
+                    // Simpan ID dan jumlah untuk dipotong stoknya
+                    itemUntukDikurangi.push({ id: kilatDataTemp.id, qty: kilatDataTemp.jumlah });
                 } else {
                     keranjang.forEach((item, i) => { 
                         detailTeks += `${i+1}. ${item.nama} (${item.berat}) - ${item.jumlah} Pcs\n`;
                         totalDuitAngka += (ekstrakHarga(item.harga) * item.jumlah);
+                        // Simpan ID dan jumlah untuk dipotong stoknya
+                        itemUntukDikurangi.push({ id: item.id, qty: item.jumlah });
                     });
                 }
 
-                // SIMPAN KE FIREBASE "pesanan"
+                // 1. SIMPAN KE FIREBASE "pesanan"
                 const dataPesanan = {
                     namaPelanggan: dataPembeliTemp.nama,
                     noWA: dataPembeliTemp.wa,
@@ -473,33 +464,54 @@
 
                 await db.collection("pesanan").add(dataPesanan);
 
+                // 2. OTOMATIS KURANGI STOK DI DATABASE "menuToko"
+                for (const item of itemUntukDikurangi) {
+                    if (item.id) {
+                        const menuRef = db.collection("menuToko").doc(item.id);
+                        await menuRef.update({
+                            stok: firebase.firestore.FieldValue.increment(-item.qty)
+                        });
+                    }
+                }
+
                 // Efek Sukses
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 showToast("Pesanan Berhasil Dikirim ke Admin!", "fa-check-double");
                 
-                // Kurangi stok di UI dan hapus keranjang
+                // 3. RESET FORM & TOMBOL
                 setTimeout(() => {
                     tutupSK();
                     if(orderType === 'keranjang') { keranjang = []; updateUIKeranjang(); }
+                    
+                    // Bersihkan inputan
                     document.getElementById('nama-pembeli').value = "";
                     document.getElementById('wa-pembeli').value = "";
+                    document.getElementById('check-setuju').checked = false; 
+
+                    // KEMBALIKAN TULISAN TOMBOL SEPERTI SEMULA
+                    btn.innerHTML = 'Kirim Pesanan';
+                    // Kembalikan style tombol ke mode non-aktif karena centang sudah hilang
+                    btn.className = "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none transition-all shadow-md";
+                    
                 }, 2000);
 
             } catch (error) {
                 console.error("Gagal mengirim:", error);
                 showToast("Terjadi kesalahan koneksi.", "fa-wifi");
-                btn.innerHTML = 'Kirim Pesanan'; btn.disabled = false;
+                
+                // Kembalikan kalau error
+                btn.innerHTML = 'Kirim Pesanan'; 
+                btn.disabled = false;
             }
         }
 
-        // Filter Logic
         function filterMenu() {
             const keyword = document.getElementById('input-cari').value.toLowerCase();
             const hasilFilter = semuaMenu.filter(item => { 
                 let cocokKategori = false;
                 if(kategoriSekarang === 'Semua') cocokKategori = true;
                 else if(kategoriSekarang === 'Roti' || kategoriSekarang === 'Kue') cocokKategori = (item.jenis === kategoriSekarang);
-                else cocokKategori = (item.kategoriTema === kategoriSekarang); // Cek kategori tema (Hampers dll)
+                else cocokKategori = (item.kategoriTema === kategoriSekarang); 
 
                 return cocokKategori && item.nama.toLowerCase().includes(keyword); 
             });
@@ -515,7 +527,6 @@
             filterMenu();
         }
 
-        // Keranjang UI
         function updateUIKeranjang() {
             const count = document.getElementById('cart-count'); const totalLabel = document.getElementById('total-harga-keranjang'); const list = document.getElementById('cart-items');
             let totalDuit = 0; const totalItem = keranjang.reduce((total, item) => total + item.jumlah, 0);
