@@ -26,7 +26,7 @@
     
     <style>
         html { scroll-behavior: smooth; }
-        input[type="text"], input[type="tel"], select { font-size: 16px !important; }
+        input[type="text"], input[type="tel"], select, textarea { font-size: 16px !important; }
         
         @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -40,7 +40,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .sold-out-img { filter: grayscale(100%) blur(1px); opacity: 0.6; }
         .status-dot { width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%; animation: pulse-green 2s infinite; }
-        .glass-morphism { background: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(15px) !important; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.95) !important; backdrop-filter: blur(15px) !important; }
         
         .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
         
@@ -76,7 +76,7 @@
         </nav>
 
         <div class="marquee-container">
-            <div class="marquee-text">✨ SELAMAT DATANG DI TOKO Douceur De Yani • PROMO SPESIAL: Cek kue dengan tanda "Diskon Tipis" • Best Seller Terlaris Minggu Ini • Dengan rasa dan kualitas premium • saran dan kritik sangat berarti buat kami • Kami selalu menjaga Kualitas Homemade & Fresh Bake di setiap Pesanan anda✨</div>
+            <div class="marquee-text">✨ SELAMAT DATANG DI TOKO Douceur De Yani • FIX ORDER WAJIB DP 50% • Batas pengambilan Pick Up maksimal 2 hari • Menjaga Kualitas Homemade & Fresh Bake di setiap pesanan Anda ✨</div>
         </div>
 
         <div id="konten-toko">
@@ -160,8 +160,9 @@
     </div>
 
     <div id="modal-cart" class="fixed inset-0 bg-black/60 hidden flex items-end justify-center z-[1000] px-4 pb-4">
-        <div class="glass-morphism w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-slide-up relative mb-2">
-            <div class="flex justify-between items-center mb-6 border-b border-stone-200/50 pb-4">
+        <div class="glass-morphism w-full max-w-md rounded-[2.5rem] p-6 shadow-2xl animate-slide-up relative mb-2 max-h-[90vh] overflow-y-auto scrollbar-hide">
+            
+            <div class="flex justify-between items-center mb-4 border-b border-stone-200/50 pb-4">
                 <div class="flex flex-col">
                     <h3 class="font-bold text-stone-800 uppercase tracking-widest text-sm">Pesanan Anda</h3>
                     <button onclick="resetKeranjang()" class="text-[9px] text-red-500 uppercase font-bold text-left mt-1">Hapus Semua</button>
@@ -169,18 +170,36 @@
                 <button onclick="toggleCart()" class="text-stone-400 p-2"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <div class="space-y-3 mb-4">
-                <input type="text" id="nama-pembeli" placeholder="Nama Lengkap Anda..." class="w-full p-4 bg-white border border-stone-100 rounded-2xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
-                <input type="tel" id="wa-pembeli" placeholder="Nomor WhatsApp (Contoh: 0812...)" class="w-full p-4 bg-white border border-stone-100 rounded-2xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
+            <div id="cart-items" class="space-y-3 mb-4 max-h-[20vh] overflow-y-auto pr-2 scrollbar-hide"></div>
+            
+            <div class="space-y-3 mb-4 border-t border-stone-200/50 pt-4">
+                <label class="text-[10px] font-bold text-stone-400 uppercase ml-1 tracking-widest block">Data Pemesan</label>
+                <input type="text" id="nama-pembeli" placeholder="Nama Lengkap Anda..." class="w-full p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
+                <input type="tel" id="wa-pembeli" placeholder="Nomor WhatsApp (Contoh: 0812...)" class="w-full p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
+                
+                <div class="bg-stone-50 p-3 rounded-xl border border-stone-100 mt-2">
+                    <label class="text-[10px] font-bold text-stone-400 uppercase mb-2 block tracking-widest">Metode Pengambilan</label>
+                    <select id="metode-kirim" onchange="toggleAlamat()" class="w-full p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none font-bold text-stone-700">
+                        <option value="Pick Up">Ambil Sendiri (Pick Up)</option>
+                        <option value="Kurir">Kirim via Kurir</option>
+                    </select>
+                    
+                    <textarea id="alamat-pembeli" placeholder="Tulis alamat lengkap pengiriman..." class="w-full mt-3 p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none hidden transition-all shadow-sm" rows="2"></textarea>
+                    <p id="info-pickup" class="text-[9px] text-amber-700 font-bold mt-2 italic">* Batas pengambilan maks 2 hari setelah checkout.</p>
+                </div>
             </div>
 
-            <div id="cart-items" class="space-y-4 max-h-[25vh] overflow-y-auto mb-4 pr-2 scrollbar-hide"></div>
-            
-            <div class="border-t border-stone-200/50 pt-4 mb-6 flex justify-between items-center px-2">
+            <div class="border-t border-stone-200/50 pt-4 mb-2 flex justify-between items-center px-2">
                 <span class="text-xs font-bold text-stone-500 uppercase">Total Belanja</span>
-                <span id="total-harga-keranjang" class="text-lg font-black text-amber-800">Rp 0</span>
+                <span id="total-harga-keranjang" class="text-lg font-black text-stone-800">Rp 0</span>
             </div>
-            <button onclick="bukaSK('keranjang')" class="w-full bg-stone-800 text-white py-5 rounded-2xl text-[11px] font-bold tracking-widest uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+            
+            <div class="mb-6 flex justify-between items-center px-3 bg-amber-50 p-2.5 rounded-xl border border-amber-100 shadow-sm">
+                <span class="text-[9px] font-black text-amber-800 uppercase tracking-wider">Minimal DP (50%)<br><span class="text-[7px] text-amber-600 font-medium">*Fix Order Wajib DP</span></span>
+                <span id="dp-keranjang" class="text-sm font-black text-amber-900">Rp 0</span>
+            </div>
+
+            <button onclick="bukaSK()" class="w-full bg-stone-800 text-white py-5 rounded-2xl text-[11px] font-bold tracking-widest uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
                 LANJUT PESAN <i class="fas fa-arrow-right"></i>
             </button>
         </div>
@@ -216,10 +235,7 @@
         let daftarKategoriTema = new Set();
         let kategoriSekarang = 'Semua';
         let itemAktif = null;
-
-        let orderType = ''; 
-        let kilatDataTemp = null;
-        let dataPembeliTemp = { nama: "", wa: "" };
+        let dataPembeliTemp = { nama: "", wa: "", metode: "", alamat: "" };
 
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
             const data = doc.data();
@@ -269,6 +285,20 @@
         }
         function formatRupiah(angka) { return "Rp " + angka.toLocaleString('id-ID'); }
         function ekstrakHarga(hargaStr) { return parseInt(hargaStr.toString().replace(/[^0-9]/g, '')) || 0; }
+
+        function toggleAlamat() {
+            const metode = document.getElementById('metode-kirim').value;
+            const alamat = document.getElementById('alamat-pembeli');
+            const info = document.getElementById('info-pickup');
+            
+            if(metode === 'Kurir') {
+                alamat.classList.remove('hidden');
+                info.classList.add('hidden');
+            } else {
+                alamat.classList.add('hidden');
+                info.classList.remove('hidden');
+            }
+        }
 
         function renderFilterKategori() {
             const wadah = document.getElementById('container-filter');
@@ -378,10 +408,13 @@
                 if(beratVal === '1kg') hargaFinal = itemAktif.harga1000;
             }
 
+            // UPGRADE UX: Beli Kilat langsung potong jalan masuk ke keranjang utama
             if (mode === 'kilat') {
+                keranjang = []; // Kosongkan keranjang lama
+                keranjang.push({ id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty });
+                updateUIKeranjang();
                 tutupModalPilihan();
-                const totalKilat = ekstrakHarga(hargaFinal) * qty;
-                bukaSK('kilat', { id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty, total: formatRupiah(totalKilat), totalAngka: totalKilat });
+                toggleCart(); // Buka form checkout seketika
                 return;
             }
 
@@ -398,24 +431,19 @@
             confetti({ particleCount: 70, origin: { y: 0.8 }, colors: ['#b45309', '#f59e0b', '#78716c'] });
         }
 
-        function bukaSK(type, data = null) {
-            orderType = type;
-            if (type === 'keranjang') {
-                const nama = document.getElementById('nama-pembeli').value.trim();
-                const wa = document.getElementById('wa-pembeli').value.trim();
-                if(!nama || !wa) { showToast("Mohon isi Nama & Nomor WA!", "fa-user-edit"); return; }
-                if(keranjang.length === 0) return;
-                
-                dataPembeliTemp = { nama: nama, wa: wa };
-                toggleCart();
-            } else {
-                const inputNama = prompt("Masukkan Nama Anda:");
-                const inputWA = prompt("Masukkan Nomor WhatsApp Anda (08xxx):");
-                if(!inputNama || !inputWA) return showToast("Pesanan kilat dibatalkan (Data kosong).", "fa-times");
-                
-                dataPembeliTemp = { nama: inputNama, wa: inputWA };
-                kilatDataTemp = data;
-            }
+        function bukaSK() {
+            const nama = document.getElementById('nama-pembeli').value.trim();
+            const wa = document.getElementById('wa-pembeli').value.trim();
+            const metode = document.getElementById('metode-kirim').value;
+            const alamat = document.getElementById('alamat-pembeli').value.trim();
+
+            if(!nama || !wa) return showToast("Mohon isi Nama & Nomor WA!", "fa-user-edit");
+            if(metode === 'Kurir' && !alamat) return showToast("Mohon isi Alamat Lengkap untuk Kurir!", "fa-map-marker-alt");
+            if(keranjang.length === 0) return showToast("Keranjang Anda kosong!", "fa-shopping-basket");
+            
+            dataPembeliTemp = { nama, wa, metode, alamat };
+            toggleCart(); // Tutup keranjang
+            
             document.getElementById('modal-sk').classList.remove('hidden');
             document.getElementById('check-setuju').checked = false;
             cekSetuju();
@@ -436,21 +464,25 @@
             try {
                 let detailTeks = "";
                 let totalDuitAngka = 0;
-                let itemUntukDikurangi = []; // Penampung untuk mengurangi stok
+                let itemUntukDikurangi = []; 
 
-                if (orderType === 'kilat') {
-                    detailTeks = `1x ${kilatDataTemp.nama} (${kilatDataTemp.berat}) - ${kilatDataTemp.jumlah} Pcs`;
-                    totalDuitAngka = kilatDataTemp.totalAngka;
-                    // Simpan ID dan jumlah untuk dipotong stoknya
-                    itemUntukDikurangi.push({ id: kilatDataTemp.id, qty: kilatDataTemp.jumlah });
+                keranjang.forEach((item, i) => { 
+                    detailTeks += `${i+1}. ${item.nama} (${item.berat}) - ${item.jumlah} Pcs\n`;
+                    totalDuitAngka += (ekstrakHarga(item.harga) * item.jumlah);
+                    itemUntukDikurangi.push({ id: item.id, qty: item.jumlah });
+                });
+
+                // Kalkulasi DP
+                const dpAngka = totalDuitAngka / 2;
+                
+                // Masukkan info pengiriman ke detail agar tampil di Owner Dashboard
+                detailTeks += `\n📦 Metode: ${dataPembeliTemp.metode}`;
+                if (dataPembeliTemp.metode === 'Kurir') {
+                    detailTeks += `\n📍 Alamat: ${dataPembeliTemp.alamat}`;
                 } else {
-                    keranjang.forEach((item, i) => { 
-                        detailTeks += `${i+1}. ${item.nama} (${item.berat}) - ${item.jumlah} Pcs\n`;
-                        totalDuitAngka += (ekstrakHarga(item.harga) * item.jumlah);
-                        // Simpan ID dan jumlah untuk dipotong stoknya
-                        itemUntukDikurangi.push({ id: item.id, qty: item.jumlah });
-                    });
+                    detailTeks += `\n⚠️ Note: Pick Up maks 2 hari`;
                 }
+                detailTeks += `\n💳 Wajib DP 50%: ${formatRupiah(dpAngka)}`;
 
                 // 1. SIMPAN KE FIREBASE "pesanan"
                 const dataPesanan = {
@@ -474,32 +506,29 @@
                     }
                 }
 
-                // Efek Sukses
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 showToast("Pesanan Berhasil Dikirim ke Admin!", "fa-check-double");
                 
                 // 3. RESET FORM & TOMBOL
                 setTimeout(() => {
                     tutupSK();
-                    if(orderType === 'keranjang') { keranjang = []; updateUIKeranjang(); }
+                    keranjang = []; 
+                    updateUIKeranjang();
                     
-                    // Bersihkan inputan
                     document.getElementById('nama-pembeli').value = "";
                     document.getElementById('wa-pembeli').value = "";
-                    document.getElementById('check-setuju').checked = false; 
+                    document.getElementById('alamat-pembeli').value = "";
+                    document.getElementById('metode-kirim').value = "Pick Up";
+                    toggleAlamat();
 
-                    // KEMBALIKAN TULISAN TOMBOL SEPERTI SEMULA
+                    document.getElementById('check-setuju').checked = false; 
                     btn.innerHTML = 'Kirim Pesanan';
-                    // Kembalikan style tombol ke mode non-aktif karena centang sudah hilang
                     btn.className = "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none transition-all shadow-md";
-                    
                 }, 2000);
 
             } catch (error) {
                 console.error("Gagal mengirim:", error);
                 showToast("Terjadi kesalahan koneksi.", "fa-wifi");
-                
-                // Kembalikan kalau error
                 btn.innerHTML = 'Kirim Pesanan'; 
                 btn.disabled = false;
             }
@@ -545,6 +574,7 @@
                 }).join('');
             }
             totalLabel.innerText = formatRupiah(totalDuit);
+            document.getElementById('dp-keranjang').innerText = formatRupiah(totalDuit / 2);
         }
 
         function resetKeranjang() { if(confirm("Hapus semua?")) { keranjang = []; updateUIKeranjang(); } }
