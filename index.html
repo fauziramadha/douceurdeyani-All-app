@@ -328,17 +328,25 @@
                 let gambarPertama = arrayGambar[0];
                 let dataGambarAttr = JSON.stringify(arrayGambar).replace(/'/g, "&#39;");
 
+                // Badge PO
+                let badgePO = item.sistemPO === 'Pre-Order' ? `<div class="absolute top-4 left-4 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border border-purple-200 z-10">PRE-ORDER</div>` : '';
+
+                // Label Tombol Beli Kilat
+                let labelBeliKilat = item.sistemPO === 'Pre-Order' ? 'PO Kilat' : 'Beli Kilat';
+
                 const card = `
                     <div class="bg-white rounded-[2.5rem] shadow-md border border-stone-50 overflow-hidden relative animate-fade-in group">
                         <div class="relative overflow-hidden h-80 bg-stone-100 flex items-center justify-center">
                             <img src="${gambarPertama}" data-images='${dataGambarAttr}' loading="lazy" class="w-full h-full object-cover slideshow-img ${isHabis ? 'sold-out-img' : ''} transition-transform duration-700 group-hover:scale-110">
+                            
+                            ${badgePO}
                             
                             ${item.kategoriTema && item.kategoriTema !== 'Reguler' ? `<div class="absolute top-4 right-4 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-2xl shadow-sm text-[9px] font-black uppercase tracking-widest border border-amber-200"><i class="fas fa-gift mr-1"></i> ${item.kategoriTema}</div>` : ''}
                             
                             ${isBestSeller ? `<div class="absolute bottom-4 left-4 bg-amber-800 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase shadow-lg">bestseller</div>` : ''}
                             ${item.hargaCoret && !isHabis ? `<div class="absolute top-16 right-4 badge-diskon">Promo Diskon</div>` : ''}
                             ${isHabis ? '<div class="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center"><span class="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border-2 border-white animate-pulse">Sold Out</span></div>' : ''}
-                            <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[9px] font-bold text-stone-500 uppercase border border-stone-100">${item.jenis}</div>
+                            ${!item.sistemPO || item.sistemPO === 'Ready' ? `<div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[9px] font-bold text-stone-500 uppercase border border-stone-100 z-10">${item.jenis}</div>` : ''}
                         </div>
                         <div class="p-8 text-center">
                             <h3 class="text-lg font-black text-stone-800 uppercase tracking-widest leading-tight">${item.nama}</h3>
@@ -350,7 +358,7 @@
                             <div class="mb-6 text-amber-900 font-black text-2xl font-serif">${hargaHtml}</div>
                             <div class="grid grid-cols-2 gap-3">
                                 <button onclick="bukaModalPilihan('${item.id}', 'keranjang')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Keranjang</button>
-                                <button onclick="bukaModalPilihan('${item.id}', 'kilat')" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">Beli Kilat</button>
+                                <button onclick="bukaModalPilihan('${item.id}', 'kilat')" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">${labelBeliKilat}</button>
                             </div>
                         </div>
                     </div>`;
