@@ -110,15 +110,15 @@
                             <label class="text-[9px] font-bold text-stone-400 uppercase ml-2">Kategori Tema / Etalase</label>
                             <input type="text" id="kategori-tema" list="saran-kategori" placeholder="Contoh: Reguler, Hampers Lebaran" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none">
                             <datalist id="saran-kategori">
-                                <option value="Reguler">
-                                <option value="KUE KERING">
-                                <option value="Spesial Idul Fitri">
-                                <option value="ROTI">
-                                <option value="Spesial Idul Adha">
-                                <option value="Spesial Valentine">
-                                <option value="Spesial Bulan Ramadhan">
-                                <option value="PROMO SPESIAL">
-                                <option value="Promo Akhir Tahun">
+                                <option value="Reguler"></option>
+                                <option value="KUE KERING"></option>
+                                <option value="Spesial Idul Fitri"></option>
+                                <option value="ROTI"></option>
+                                <option value="Spesial Idul Adha"></option>
+                                <option value="Spesial Valentine"></option>
+                                <option value="Spesial Bulan Ramadhan"></option>
+                                <option value="PROMO SPESIAL"></option>
+                                <option value="Promo Akhir Tahun"></option>
                             </datalist>
                         </div>
 
@@ -312,15 +312,20 @@
                 sistemPO 
             };
 
-            if(!editModeId) { dataProduk.tgl = new Date(); dataProduk.terjual = 0; }
+            // FIX: Penggunaan serverTimestamp bawaan dari firebase agar akurat terurut
+            if(!editModeId) { 
+                dataProduk.tgl = firebase.firestore.FieldValue.serverTimestamp(); 
+                dataProduk.terjual = 0; 
+            }
 
+            // FIX: Tambahan fallback '|| 0' agar tidak menyebabkan bug (Rp NaN) jika ada form yang tidak terisi 
             if(jenis === 'Kue') {
-                dataProduk.harga250 = "Rp " + Number(document.getElementById('harga250').value).toLocaleString('id-ID');
-                dataProduk.harga500 = "Rp " + Number(document.getElementById('harga500').value).toLocaleString('id-ID');
-                dataProduk.harga1000 = "Rp " + Number(document.getElementById('harga1000').value).toLocaleString('id-ID');
+                dataProduk.harga250 = "Rp " + (Number(document.getElementById('harga250').value) || 0).toLocaleString('id-ID');
+                dataProduk.harga500 = "Rp " + (Number(document.getElementById('harga500').value) || 0).toLocaleString('id-ID');
+                dataProduk.harga1000 = "Rp " + (Number(document.getElementById('harga1000').value) || 0).toLocaleString('id-ID');
                 dataProduk.harga = dataProduk.harga250; dataProduk.hargaCoret = null;
             } else {
-                dataProduk.harga = "Rp " + Number(document.getElementById('harga').value).toLocaleString('id-ID');
+                dataProduk.harga = "Rp " + (Number(document.getElementById('harga').value) || 0).toLocaleString('id-ID');
                 const coret = document.getElementById('harga-coret').value;
                 dataProduk.hargaCoret = coret ? "Rp " + Number(coret).toLocaleString('id-ID') : null;
                 dataProduk.harga250 = null; dataProduk.harga500 = null; dataProduk.harga1000 = null;
@@ -440,19 +445,58 @@
             document.getElementById('btn-simpan-menu').innerHTML = "SIMPAN PRODUK"; document.getElementById('btn-batal-edit').classList.add('hidden');
         }
 
+        // FIX: Perbaikan mekanisme penambahan Stok agar aman untuk jaringan (mencegah bentrok data minus)
         async function updateStok(id, change) {
-            const docRef = db.collection("menuToko").doc(id); const doc = await docRef.get();
-            let stokBaru = (Number(doc.data().stok) || 0) + change;
-            if(stokBaru >= 0) await docRef.update({ stok: stokBaru, pin: PIN_AKSES });
+            const docRef = db.collection("menuToko").doc(id); 
+            const doc = await docRef.get();
+            if ((Number(doc.data().stok) || 0) + change >= 0) {
+                await docRef.update({ stok: firebase.firestore.FieldValue.increment(change), pin: PIN_AKSES });
+            }
         }
+        
         async function hapusMenu(id) { if(confirm("Hapus menu ini?")) await db.collection("menuToko").doc(id).delete(); }
 
         // ================= SISTEM PESANAN PENUH =================
+        // FIX: Logika Otomatis Menambah Jumlah "Terjual" (Best Seller)
         async function updateStatusPesanan(id, statusBaru) {
             if(confirm(`Ubah status pesanan menjadi ${statusBaru}?`)) {
-                await db.collection("pesanan").doc(id).update({ status: statusBaru });
+                try {
+                    await db.collection("pesanan").doc(id).update({ status: statusBaru });
+                    
+                    if (statusBaru === 'Selesai') {
+                        const docRef = await db.collection("pesanan").doc(id).get();
+                        const order = docRef.data();
+                        
+                        // Sistem memindai teks pesanan untuk meng-update menu "Terlaris" secara akurat
+                        if (order && order.detailPesanan) {
+                            const baris = order.detailPesanan.split('\n');
+                            const menusSnapshot = await db.collection("menuToko").get();
+                            let menus = [];
+                            menusSnapshot.forEach(d => menus.push({ id: d.id, nama: d.data().nama }));
+                            
+                            menus.sort((a, b) => b.nama.length - a.nama.length);
+
+                            for (let b of baris) {
+                                if (b.match(/^\d+\./)) { 
+                                    let matchMenu = menus.find(m => b.includes(m.nama));
+                                    if (matchMenu) {
+                                        let matchQty = b.match(/-\s*(\d+)\s*Pcs/i);
+                                        let qty = matchQty ? parseInt(matchQty[1]) : 1;
+                                        await db.collection("menuToko").doc(matchMenu.id).update({
+                                            terjual: firebase.firestore.FieldValue.increment(qty)
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    alert("Terjadi kesalahan saat memproses data.");
+                    console.error(e);
+                }
             }
         }
+        
         async function hapusPesanan(id) {
             if(confirm("Hapus pesanan ini dari daftar? Data tidak bisa dikembalikan.")) {
                 await db.collection("pesanan").doc(id).delete();
@@ -494,27 +538,21 @@
                     tombolAksi = `<button disabled class="flex-1 bg-stone-100 text-stone-400 py-2 rounded-xl text-[9px] font-black uppercase border border-stone-200">Pesanan Selesai</button>`;
                 }
 
-                // ==============================
-                // FORMAT PESAN WA KE PELANGGAN
-                // ==============================
                 const totalHargaAsli = order.totalHarga || 0;
                 const dpHargaAsli = totalHargaAsli / 2;
                 const totalFormat = totalHargaAsli.toLocaleString('id-ID');
                 const dpFormat = dpHargaAsli.toLocaleString('id-ID');
 
-                // Kita cari tau metode pengiriman dari detail pesanan
                 let metodeKirim = "Pick Up";
                 let alamatKirim = "";
                 if (order.detailPesanan.includes("📦 Metode: Kurir")) {
                     metodeKirim = "Kurir";
-                    // Mencari baris alamat dengan Regex
                     const matchAlamat = order.detailPesanan.match(/📍 Alamat: (.*)/);
                     if (matchAlamat) {
                         alamatKirim = matchAlamat[1];
                     }
                 }
 
-                // Ambil daftar barang pesanan (hilangkan baris metode, note, dll)
                 let barisDetail = order.detailPesanan.split('\n');
                 let barangSaja = "";
                 for (let baris of barisDetail) {
@@ -538,8 +576,8 @@
                 templatePesan += `_Sebelum melanjutkan proses pesanan, mohon melakukan pembayaran wajib DP 50% terlebih dahulu ya kak._\n\nTerima kasih banyak! 🙏`;
 
                 let waPesan = encodeURIComponent(templatePesan);
-                // ==============================
 
+                // FIX: Menambahkan class 'whitespace-pre-line' pada div text agar Rincian Pesanan Enter-nya tidak nyambung kesamping
                 orderHtml += `
                     <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative">
                         <button onclick="hapusPesanan('${doc.id}')" class="absolute top-4 right-4 text-stone-300 hover:text-red-500 transition-colors"><i class="fas fa-times"></i></button>
@@ -553,7 +591,7 @@
                             <span class="${statusLabelClass} text-[9px] px-3 py-1 rounded-full font-black uppercase border border-white outline outline-1 outline-stone-100">${statusTeks}</span>
                         </div>
                         
-                        <div class="text-[11px] font-bold text-stone-600 bg-stone-50 p-3 rounded-xl border border-stone-100 leading-relaxed">
+                        <div class="text-[11px] font-bold text-stone-600 bg-stone-50 p-3 rounded-xl border border-stone-100 leading-relaxed whitespace-pre-line">
                             ${order.detailPesanan || "Detail pesanan tidak tersedia"} 
                             <br><span class="text-amber-700 mt-1 block">Total Tagihan: Rp ${(order.totalHarga || 0).toLocaleString('id-ID')}</span>
                         </div>
