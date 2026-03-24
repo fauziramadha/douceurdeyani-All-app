@@ -11,7 +11,7 @@
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Douceur De Yani | Menu Homemade Terlezat">
-    <meta property="og:description" content="Nikmati kelembutan roti dan kue kering fresh dari dapur Douceur De Yani. Pesan mudah via WhatsApp!">
+    <meta property="og:description" content="Nikmati kelembutan roti dan kue kering fresh dari dapur Douceur De Yani. Pesan mudah!">
     <meta property="og:image" content="https://i.ibb.co.com/BVD8vCfn/03-D9-FB2-B-A141-42-F0-9-F24-4095-B13-D44-EE.png">
     <meta property="og:url" content="https://douceurdeyani.web.app">
     <meta property="og:site_name" content="Douceur De Yani">
@@ -26,7 +26,7 @@
     
     <style>
         html { scroll-behavior: smooth; }
-        input[type="text"], select { font-size: 16px !important; }
+        input[type="text"], input[type="tel"], select { font-size: 16px !important; }
         
         @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -86,11 +86,8 @@
                     <input type="text" id="input-cari" onkeyup="filterMenu()" placeholder="Cari kue favoritmu..." 
                         class="w-full pl-12 pr-4 py-4 bg-white border border-stone-100 rounded-[1.5rem] shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-amber-100 transition-all">
                 </div>
-                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-start">
-                    <button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>
-                    <button onclick="filterKategori('Promo', this)" class="btn-filter bg-white text-red-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-500 shadow-sm transition-all whitespace-nowrap">🔥 Promo</button>
-                    <button onclick="filterKategori('Roti', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Roti</button>
-                    <button onclick="filterKategori('Kue', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Kue Kering</button>
+                <div id="container-filter" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-start">
+                    <button class="bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>
                 </div>
             </div>
 
@@ -157,7 +154,7 @@
 
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="tutupModalPilihan()" class="py-4 rounded-full text-[9px] font-bold uppercase text-stone-400 border border-stone-100">Batal</button>
-                <button id="btn-konfirmasi-pilihan" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase shadow-md active:scale-95 transition-all">Konfirmasi</button>
+                <button id="btn-konfirmasi-pilihan" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase shadow-md active:scale-95 transition-all">Tambahkan</button>
             </div>
         </div>
     </div>
@@ -171,14 +168,20 @@
                 </div>
                 <button onclick="toggleCart()" class="text-stone-400 p-2"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <input type="text" id="nama-pembeli" placeholder="Nama Anda..." class="w-full mb-4 p-4 bg-white border border-stone-100 rounded-2xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
-            <div id="cart-items" class="space-y-4 max-h-[30vh] overflow-y-auto mb-4 pr-2 scrollbar-hide"></div>
+            
+            <div class="space-y-3 mb-4">
+                <input type="text" id="nama-pembeli" placeholder="Nama Lengkap Anda..." class="w-full p-4 bg-white border border-stone-100 rounded-2xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
+                <input type="tel" id="wa-pembeli" placeholder="Nomor WhatsApp (Contoh: 0812...)" class="w-full p-4 bg-white border border-stone-100 rounded-2xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
+            </div>
+
+            <div id="cart-items" class="space-y-4 max-h-[25vh] overflow-y-auto mb-4 pr-2 scrollbar-hide"></div>
+            
             <div class="border-t border-stone-200/50 pt-4 mb-6 flex justify-between items-center px-2">
                 <span class="text-xs font-bold text-stone-500 uppercase">Total Belanja</span>
                 <span id="total-harga-keranjang" class="text-lg font-black text-amber-800">Rp 0</span>
             </div>
-            <button onclick="bukaSK('keranjang')" class="w-full bg-green-600 text-white py-5 rounded-2xl text-[11px] font-bold tracking-widest uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
-                <i class="fab fa-whatsapp text-xl"></i> LANJUT PESAN
+            <button onclick="bukaSK('keranjang')" class="w-full bg-stone-800 text-white py-5 rounded-2xl text-[11px] font-bold tracking-widest uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+                LANJUT PESAN <i class="fas fa-arrow-right"></i>
             </button>
         </div>
     </div>
@@ -197,26 +200,27 @@
             </label>
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="tutupSK()" class="py-4 rounded-full text-[9px] font-bold uppercase text-stone-400 border border-stone-100">Batal</button>
-                <button id="btn-lanjut-wa" onclick="eksekusiPesan()" disabled class="bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none transition-all shadow-md">Hubungi Admin</button>
+                <button id="btn-lanjut-wa" onclick="prosesKeDatabase()" disabled class="bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none transition-all shadow-md">Kirim Pesanan</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Inisialisasi Firebase
+        // Inisialisasi Firebase (SAMA SEPERTI APLIKASI OWNER)
         const firebaseConfig = { apiKey: "AIzaSyByGpucXRAToCpkTLf9R-k1YqDQ75Zm5_E", authDomain: "douceurdeyani.firebaseapp.com", projectId: "douceurdeyani", storageBucket: "douceurdeyani.firebasestorage.app", messagingSenderId: "349596738343", appId: "1:349596738343:web:a2ab4e333b42a68b3fbf02" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let keranjang = [];
         let semuaMenu = [];
+        let daftarKategoriTema = new Set(); // Menyimpan kategori yang aktif
         let kategoriSekarang = 'Semua';
         let itemAktif = null;
 
-        // Variabel penampung data pesanan sementara
-        let orderType = ''; // 'keranjang' atau 'kilat'
+        // Penampung data
+        let orderType = ''; 
         let kilatDataTemp = null;
-        let namaPelangganTemp = "";
+        let dataPembeliTemp = { nama: "", wa: "" };
 
         // 1. Sinkronisasi Status Toko & S&K
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
@@ -230,71 +234,90 @@
 
             const sekarang = new Date();
             const jamSekarang = sekarang.getHours().toString().padStart(2, '0') + ":" + sekarang.getMinutes().toString().padStart(2, '0');
-            const jamBuka = data.buka || "00:00";
-            const jamTutup = data.tutup || "23:59";
+            const jamBuka = data.buka || "00:00"; const jamTutup = data.tutup || "23:59";
             const statusManual = data.isOpen;
             const isTutupJadwal = jamSekarang < jamBuka || jamSekarang >= jamTutup;
-            const container = document.getElementById('app-container');
-            const layerTutup = document.getElementById('layer-tutup');
+            const container = document.getElementById('app-container'); const layerTutup = document.getElementById('layer-tutup');
 
             if (statusManual === false || isTutupJadwal) {
-                container.classList.add('hidden');
-                layerTutup.classList.remove('hidden');
+                container.classList.add('hidden'); layerTutup.classList.remove('hidden');
                 document.getElementById('judul-tutup').innerText = statusManual === false ? "Toko Sedang Tutup" : "Di Luar Jam Operasional";
                 document.getElementById('pesan-tutup').innerText = statusManual === false ? "Maaf, saat ini Douceur De Yani sedang tidak menerima pesanan." : `Toko buka setiap pukul ${jamBuka} - ${jamTutup}.`;
             } else {
-                container.classList.remove('hidden');
-                layerTutup.classList.add('hidden');
+                container.classList.remove('hidden'); layerTutup.classList.add('hidden');
             }
         });
 
-        // 2. Load Data Menu
+        // 2. Load Data Menu (TERMASUK KATEGORI TEMA & MULTI FOTO)
         db.collection("menuToko").orderBy("tgl", "desc").onSnapshot((snapshot) => {
             semuaMenu = [];
-            snapshot.forEach((doc) => { semuaMenu.push({ id: doc.id, ...doc.data() }); });
+            daftarKategoriTema.clear();
+
+            snapshot.forEach((doc) => { 
+                const data = doc.data();
+                semuaMenu.push({ id: doc.id, ...data }); 
+                // Kumpulkan kategori
+                if(data.kategoriTema && data.kategoriTema !== 'Reguler') {
+                    daftarKategoriTema.add(data.kategoriTema);
+                }
+            });
+            renderFilterKategori();
             filterMenu();
         });
 
-        // 3. Helper Functions
+        // 3. Helper
         function showToast(pesan, ikon = 'fa-info-circle') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fas ${ikon}"></i> <span>${pesan}</span>`;
+            const container = document.getElementById('toast-container'); const toast = document.createElement('div');
+            toast.className = 'toast'; toast.innerHTML = `<i class="fas ${ikon}"></i> <span>${pesan}</span>`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
         }
-
         function formatRupiah(angka) { return "Rp " + angka.toLocaleString('id-ID'); }
         function ekstrakHarga(hargaStr) { return parseInt(hargaStr.toString().replace(/[^0-9]/g, '')) || 0; }
 
+        // Render Filter Dinamis dari Database
+        function renderFilterKategori() {
+            const wadah = document.getElementById('container-filter');
+            let html = `<button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>`;
+            
+            html += `<button onclick="filterKategori('Roti', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Roti Pcs</button>`;
+            html += `<button onclick="filterKategori('Kue', this)" class="btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap">Kue Kering</button>`;
+
+            // Render kategori tema yang aktif (misal: Hampers)
+            daftarKategoriTema.forEach(kat => {
+                html += `<button onclick="filterKategori('${kat}', this)" class="btn-filter bg-amber-50 text-amber-800 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-200 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-star text-[8px] mr-1"></i> ${kat}</button>`;
+            });
+            wadah.innerHTML = html;
+        }
+
         // 4. Render Menu
         function tampilkanMenu(data) {
-            const wadah = document.getElementById('daftar-roti');
-            wadah.innerHTML = ""; 
+            const wadah = document.getElementById('daftar-roti'); wadah.innerHTML = ""; 
             if(data.length === 0) {
-                wadah.innerHTML = `<div class="text-center py-20 text-stone-400 italic text-sm">Kue tidak ditemukan...</div>`;
-                return;
+                wadah.innerHTML = `<div class="text-center py-20 text-stone-400 italic text-sm">Kue tidak ditemukan...</div>`; return;
             }
 
             data.forEach((item, index) => {
                 const isHabis = item.stok <= 0;
                 const statusStok = isHabis ? `<span class="text-red-500 font-bold uppercase tracking-widest text-[9px] italic">Habis</span>` : `<span class="text-green-600 font-bold uppercase tracking-widest text-[9px]">Stok: ${item.stok}</span>`;
-                const randomRating = (Math.random() * (5.0 - 4.8) + 4.8).toFixed(1);
                 const isBestSeller = index < 2 && !isHabis;
                 const hargaHtml = item.hargaCoret ? `<span>${item.harga}</span><span class="text-red-300 line-through text-xs ml-2">${item.hargaCoret}</span>` : `<span>${item.harga}</span>`;
+                
+                // MULTI FOTO SLIDESHOW LOGIC
+                let arrayGambar = Array.isArray(item.gambar) ? item.gambar : [item.gambar];
+                let gambarPertama = arrayGambar[0];
+                let dataGambarAttr = JSON.stringify(arrayGambar).replace(/'/g, "&#39;");
 
                 const card = `
                     <div class="bg-white rounded-[2.5rem] shadow-md border border-stone-50 overflow-hidden relative animate-fade-in group">
-                        <div class="relative overflow-hidden">
-                            <img src="${item.gambar}" loading="lazy" class="w-full h-80 object-cover ${isHabis ? 'sold-out-img' : ''} transition-transform duration-700 group-hover:scale-110">
-                            <div class="absolute top-4 right-4 review-badge px-3 py-1.5 rounded-2xl flex items-center gap-1 shadow-sm">
-                                <i class="fas fa-star text-amber-500 text-[10px]"></i>
-                                <span class="text-[10px] font-black text-stone-700">${randomRating}</span>
-                            </div>
+                        <div class="relative overflow-hidden h-80 bg-stone-100 flex items-center justify-center">
+                            <img src="${gambarPertama}" data-images='${dataGambarAttr}' loading="lazy" class="w-full h-full object-cover slideshow-img ${isHabis ? 'sold-out-img' : ''} transition-transform duration-700 group-hover:scale-110">
+                            
+                            ${item.kategoriTema && item.kategoriTema !== 'Reguler' ? `<div class="absolute top-4 right-4 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-2xl shadow-sm text-[9px] font-black uppercase tracking-widest border border-amber-200"><i class="fas fa-gift mr-1"></i> ${item.kategoriTema}</div>` : ''}
+                            
                             ${isBestSeller ? `<div class="absolute bottom-4 left-4 bg-amber-800 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase shadow-lg">bestseller</div>` : ''}
-                            ${item.hargaCoret && !isHabis ? `<div class="absolute top-16 right-4 badge-diskon">Diskon Tipis</div>` : ''}
-                            ${isHabis ? '<div class="absolute inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"><span class="bg-white/90 text-stone-800 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white">Sold Out</span></div>' : ''}
+                            ${item.hargaCoret && !isHabis ? `<div class="absolute top-16 right-4 badge-diskon">Promo Diskon</div>` : ''}
+                            ${isHabis ? '<div class="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center"><span class="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border-2 border-white animate-pulse">Sold Out</span></div>' : ''}
                             <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[9px] font-bold text-stone-500 uppercase border border-stone-100">${item.jenis}</div>
                         </div>
                         <div class="p-8 text-center">
@@ -306,7 +329,7 @@
                             </div>
                             <div class="mb-6 text-amber-900 font-black text-2xl font-serif">${hargaHtml}</div>
                             <div class="grid grid-cols-2 gap-3">
-                                <button onclick="bukaModalPilihan('${item.id}', 'keranjang')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Tambah</button>
+                                <button onclick="bukaModalPilihan('${item.id}', 'keranjang')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Keranjang</button>
                                 <button onclick="bukaModalPilihan('${item.id}', 'kilat')" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">Beli Kilat</button>
                             </div>
                         </div>
@@ -315,11 +338,24 @@
             });
         }
 
+        // Script Slideshow Otomatis
+        setInterval(() => {
+            document.querySelectorAll('.slideshow-img').forEach(img => {
+                try {
+                    const urls = JSON.parse(img.getAttribute('data-images'));
+                    if(urls.length > 1) {
+                        let currentIndex = parseInt(img.getAttribute('data-index') || "0");
+                        currentIndex = (currentIndex + 1) % urls.length;
+                        img.src = urls[currentIndex]; img.setAttribute('data-index', currentIndex);
+                    }
+                } catch(e){}
+            });
+        }, 2000);
+
         // --- FUNGSI MODAL PILIHAN ---
         function bukaModalPilihan(id, mode) {
             itemAktif = semuaMenu.find(i => i.id === id);
             if (!itemAktif) return;
-
             document.getElementById('judul-pilihan').innerText = itemAktif.nama;
             document.getElementById('info-stok-sisa').innerText = `Stok tersedia: ${itemAktif.stok} pcs`;
             document.getElementById('input-qty').value = 1;
@@ -327,15 +363,12 @@
             const areaBerat = document.getElementById('area-berat');
             if(itemAktif.jenis === 'Kue') {
                 areaBerat.classList.remove('hidden');
-                const select = document.getElementById('pilih-berat');
-                select.innerHTML = `
+                document.getElementById('pilih-berat').innerHTML = `
                     <option value="250g">250 Gram - ${itemAktif.harga250 || itemAktif.harga}</option>
                     <option value="500g">500 Gram - ${itemAktif.harga500 || itemAktif.harga}</option>
                     <option value="1kg">1 Kilogram - ${itemAktif.harga1000 || itemAktif.harga}</option>
                 `;
-            } else {
-                areaBerat.classList.add('hidden');
-            }
+            } else { areaBerat.classList.add('hidden'); }
 
             document.getElementById('modal-pilihan').classList.remove('hidden');
             document.getElementById('btn-konfirmasi-pilihan').onclick = () => eksekusiPilihan(mode);
@@ -346,13 +379,10 @@
         function eksekusiPilihan(mode) {
             const qty = parseInt(document.getElementById('input-qty').value);
             const beratVal = document.getElementById('pilih-berat').value;
-            
             if (isNaN(qty) || qty < 1) return showToast("Masukkan jumlah valid!", "fa-exclamation-circle");
             if (qty > itemAktif.stok) return showToast(`Stok tidak cukup! (Sisa ${itemAktif.stok})`, "fa-warning");
 
-            let hargaFinal = itemAktif.harga;
-            let labelBerat = itemAktif.berat || "";
-
+            let hargaFinal = itemAktif.harga, labelBerat = itemAktif.berat || "";
             if (itemAktif.jenis === 'Kue') {
                 labelBerat = beratVal;
                 if(beratVal === '250g') hargaFinal = itemAktif.harga250;
@@ -363,13 +393,7 @@
             if (mode === 'kilat') {
                 tutupModalPilihan();
                 const totalKilat = ekstrakHarga(hargaFinal) * qty;
-                bukaSK('kilat', { 
-                    nama: itemAktif.nama, 
-                    harga: hargaFinal, 
-                    berat: labelBerat, 
-                    jumlah: qty,
-                    total: formatRupiah(totalKilat)
-                });
+                bukaSK('kilat', { id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty, total: formatRupiah(totalKilat), totalAngka: totalKilat });
                 return;
             }
 
@@ -381,8 +405,7 @@
                 keranjang.push({ id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty });
             }
 
-            updateUIKeranjang();
-            tutupModalPilihan();
+            updateUIKeranjang(); tutupModalPilihan();
             showToast(`${qty} ${itemAktif.nama} ditambahkan!`, "fa-check-circle");
             confetti({ particleCount: 70, origin: { y: 0.8 }, colors: ['#b45309', '#f59e0b', '#78716c'] });
         }
@@ -392,54 +415,92 @@
             orderType = type;
             if (type === 'keranjang') {
                 const nama = document.getElementById('nama-pembeli').value.trim();
-                if(!nama) { showToast("Isi nama dulu ya Kak!", "fa-user-edit"); document.getElementById('nama-pembeli').focus(); return; }
+                const wa = document.getElementById('wa-pembeli').value.trim();
+                if(!nama || !wa) { showToast("Mohon isi Nama & Nomor WA!", "fa-user-edit"); return; }
                 if(keranjang.length === 0) return;
-                namaPelangganTemp = nama;
+                
+                dataPembeliTemp = { nama: nama, wa: wa };
                 toggleCart();
             } else {
+                // Untuk Beli Kilat, minta nama dulu via prompt sederhana (Bisa diperbagus nanti)
+                const inputNama = prompt("Masukkan Nama Anda:");
+                const inputWA = prompt("Masukkan Nomor WhatsApp Anda (08xxx):");
+                if(!inputNama || !inputWA) return showToast("Pesanan kilat dibatalkan (Data kosong).", "fa-times");
+                
+                dataPembeliTemp = { nama: inputNama, wa: inputWA };
                 kilatDataTemp = data;
             }
             document.getElementById('modal-sk').classList.remove('hidden');
+            document.getElementById('check-setuju').checked = false;
+            cekSetuju();
         }
 
         function tutupSK() { document.getElementById('modal-sk').classList.add('hidden'); }
-
         function cekSetuju() {
-            const isChecked = document.getElementById('check-setuju').checked;
+            const isChecked = document.getElementById('check-setuju').checked; const btn = document.getElementById('btn-lanjut-wa');
+            btn.disabled = !isChecked; btn.className = isChecked ? "bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95" : "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none";
+        }
+
+        // ===== FUNGSI INTI: KIRIM KE DATABASE OWNER =====
+        async function prosesKeDatabase() {
             const btn = document.getElementById('btn-lanjut-wa');
-            btn.disabled = !isChecked;
-            btn.className = isChecked ? "bg-green-600 text-white py-4 rounded-full text-[9px] font-bold uppercase shadow-md active:scale-95" : "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none";
-        }
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...';
+            btn.disabled = true;
 
-        function eksekusiPesan() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            let teks = "";
-            if (orderType === 'kilat') {
-                teks = `Halo Admin Douceur De Yani, saya mau pesan kilat:\n\n🍰 *${kilatDataTemp.nama}*\nDetail: ${kilatDataTemp.berat}\nJumlah: ${kilatDataTemp.jumlah}x\nHarga Satuan: ${kilatDataTemp.harga}\n--------------------------\n💰 *Total: ${kilatDataTemp.total}*\n\nMohon diproses ya!`;
-            } else {
-                teks = `Halo Admin Yani, saya *${namaPelangganTemp}* ingin memesan:\n\n`;
-                keranjang.forEach((item, i) => { 
-                    const subtotal = ekstrakHarga(item.harga) * item.jumlah;
-                    teks += `${i+1}. *${item.nama}* (${item.jumlah}x)\nVarian: ${item.berat}\nSubtotal: ${formatRupiah(subtotal)}\n\n`; 
-                });
-                teks += `--------------------------\n💰 *Total Bayar: ${document.getElementById('total-harga-keranjang').innerText}*`;
-            }
-            window.location.href = `https://wa.me/6288287111377?text=${encodeURIComponent(teks)}`;
-            
-            setTimeout(() => {
-                tutupSK();
-                if(orderType === 'keranjang') {
-                    keranjang = [];
-                    updateUIKeranjang();
-                    document.getElementById('nama-pembeli').value = "";
+            try {
+                let detailTeks = "";
+                let totalDuitAngka = 0;
+
+                if (orderType === 'kilat') {
+                    detailTeks = `1x ${kilatDataTemp.nama} (${kilatDataTemp.berat}) - ${kilatDataTemp.jumlah} Pcs`;
+                    totalDuitAngka = kilatDataTemp.totalAngka;
+                } else {
+                    keranjang.forEach((item, i) => { 
+                        detailTeks += `${i+1}. ${item.nama} (${item.berat}) - ${item.jumlah} Pcs\n`;
+                        totalDuitAngka += (ekstrakHarga(item.harga) * item.jumlah);
+                    });
                 }
-            }, 2000);
+
+                // SIMPAN KE FIREBASE "pesanan"
+                const dataPesanan = {
+                    namaPelanggan: dataPembeliTemp.nama,
+                    noWA: dataPembeliTemp.wa,
+                    detailPesanan: detailTeks,
+                    totalHarga: totalDuitAngka,
+                    status: "Baru Masuk",
+                    waktuOrder: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection("pesanan").add(dataPesanan);
+
+                // Efek Sukses
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                showToast("Pesanan Berhasil Dikirim ke Admin!", "fa-check-double");
+                
+                // Kurangi stok di UI dan hapus keranjang
+                setTimeout(() => {
+                    tutupSK();
+                    if(orderType === 'keranjang') { keranjang = []; updateUIKeranjang(); }
+                    document.getElementById('nama-pembeli').value = "";
+                    document.getElementById('wa-pembeli').value = "";
+                }, 2000);
+
+            } catch (error) {
+                console.error("Gagal mengirim:", error);
+                showToast("Terjadi kesalahan koneksi.", "fa-wifi");
+                btn.innerHTML = 'Kirim Pesanan'; btn.disabled = false;
+            }
         }
 
+        // Filter Logic
         function filterMenu() {
             const keyword = document.getElementById('input-cari').value.toLowerCase();
             const hasilFilter = semuaMenu.filter(item => { 
-                const cocokKategori = (kategoriSekarang === 'Semua' || item.jenis === kategoriSekarang); 
+                let cocokKategori = false;
+                if(kategoriSekarang === 'Semua') cocokKategori = true;
+                else if(kategoriSekarang === 'Roti' || kategoriSekarang === 'Kue') cocokKategori = (item.jenis === kategoriSekarang);
+                else cocokKategori = (item.kategoriTema === kategoriSekarang); // Cek kategori tema (Hampers dll)
+
                 return cocokKategori && item.nama.toLowerCase().includes(keyword); 
             });
             tampilkanMenu(hasilFilter);
@@ -448,32 +509,25 @@
         function filterKategori(kat, element) {
             kategoriSekarang = kat;
             document.querySelectorAll('.btn-filter').forEach(btn => { 
-                btn.classList.replace('bg-stone-800', 'bg-white'); 
-                btn.classList.replace('text-white', 'text-stone-600'); 
-                btn.classList.add('border-stone-100');
+                btn.className = "btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap";
             });
-            element.classList.remove('bg-white', 'text-stone-600', 'border-stone-100'); 
-            element.classList.add('bg-stone-800', 'text-white');
+            element.className = "btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap";
             filterMenu();
         }
 
+        // Keranjang UI
         function updateUIKeranjang() {
-            const count = document.getElementById('cart-count');
-            const totalLabel = document.getElementById('total-harga-keranjang');
-            const list = document.getElementById('cart-items');
-            let totalDuit = 0;
-            const totalItem = keranjang.reduce((total, item) => total + item.jumlah, 0);
+            const count = document.getElementById('cart-count'); const totalLabel = document.getElementById('total-harga-keranjang'); const list = document.getElementById('cart-items');
+            let totalDuit = 0; const totalItem = keranjang.reduce((total, item) => total + item.jumlah, 0);
             
-            count.innerText = totalItem;
-            count.classList.toggle('hidden', keranjang.length === 0);
+            count.innerText = totalItem; count.classList.toggle('hidden', keranjang.length === 0);
 
             if (keranjang.length === 0) {
                 list.innerHTML = `<div class="text-center py-10"><i class="fas fa-shopping-basket text-stone-100 text-5xl mb-3"></i><p class="text-stone-400 text-[10px] italic">Keranjang kosong...</p></div>`;
             } else {
                 list.innerHTML = keranjang.map((item, index) => {
-                    const hargaSatuan = ekstrakHarga(item.harga);
-                    totalDuit += (hargaSatuan * item.jumlah);
-                    return `<div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-stone-100 shadow-sm">
+                    const hargaSatuan = ekstrakHarga(item.harga); totalDuit += (hargaSatuan * item.jumlah);
+                    return `<div class="flex justify-between items-center bg-stone-50 p-4 rounded-2xl border border-stone-100 shadow-sm">
                         <div><p class="font-bold text-stone-800 text-[11px] uppercase">${item.nama}</p><p class="text-[9px] text-stone-400 font-bold">${item.berat} | ${item.jumlah}x</p></div>
                         <button onclick="hapusItem(${index})" class="text-red-300 p-2"><i class="fas fa-trash-alt"></i></button>
                     </div>`;
