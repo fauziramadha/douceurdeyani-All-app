@@ -510,9 +510,11 @@
                 else if(statusTeks === 'Dibatalkan') statusColor = 'bg-red-100 text-red-800 border-red-200';
 
                 let formatTotal = order.totalHarga ? "Rp " + Number(order.totalHarga).toLocaleString('id-ID') : "Rp 0";
-                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sudah kami terima dan sedang diproses ya 😊\n\n*📦 Rincian Pesanan:*\n${order.detailPesanan}\n\n*💰 Total Belanja:* ${formatTotal}\n\nTerima kasih banyak! 🙏`;
+                
+                // --- UPDATE TEKS PESANAN WHATSAPP + REKENING DANA ---
+                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sudah kami catat ya 😊\n\n*📦 Rincian Pesanan:*\n${order.detailPesanan}\n\n*💰 Total Belanja:* ${formatTotal}\n\n_Sebelum melanjutkan proses pesanan, mohon melakukan pembayaran wajib DP 50% terlebih dahulu ya kak._\n\n💳 *Pembayaran via DANA:*\nNo: 08157632665\n\nJika sudah transfer, mohon kirimkan bukti pembayarannya di sini ya kak. Terima kasih banyak! 🙏`;
+                // ------------------------------------------------------
 
-                // FITUR BARU: Dropdown Status Pesanan
                 orderHtml += `
                     <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative animate-fade-in">
                         <button onclick="hapusPesanan('${doc.id}')" class="absolute top-4 right-4 text-stone-300 hover:text-red-500"><i class="fas fa-times"></i></button>
@@ -541,7 +543,6 @@
         });
 
         async function updateStatusPesanan(id, statusBaru) { 
-            // Langsung update status tanpa alert konfirmasi agar lebih cepat (bisa ditambahkan confirm() jika perlu)
             await db.collection("pesanan").doc(id).update({ status: statusBaru, pin: PIN_AKSES }); 
         }
         async function hapusPesanan(id) { if(confirm("Hapus pesanan ini secara permanen?")) await db.collection("pesanan").doc(id).delete(); }
