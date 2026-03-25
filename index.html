@@ -45,7 +45,6 @@
         .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
         
         .badge-diskon { animation: pulse-red 1.5s infinite; background: #ef4444; color: white; padding: 4px 10px; border-radius: 8px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
-        .review-badge { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); }
         .marquee-container { overflow: hidden; white-space: nowrap; background: #FFF9EB; border-bottom: 1px solid #FEF3C7; }
         .marquee-text { display: inline-block; animation: marquee 20s linear infinite; font-size: 10px; font-weight: bold; color: #92400e; padding: 8px 0; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -58,6 +57,11 @@
     <div id="toast-container"></div>
 
     <div id="app-container">
+        <div id="promo-banner" class="bg-amber-800 text-white text-[9px] font-black uppercase tracking-[0.2em] p-2.5 text-center relative z-50">
+            <span id="promo-text">✨ Spesial Hari Ini: Menu Fresh Bake Siap Dipesan! ✨</span>
+            <button onclick="document.getElementById('promo-banner').style.display='none'" class="absolute right-4 top-1/2 -translate-y-1/2 text-amber-200 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+
         <nav class="p-5 bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-[100] flex items-center justify-between border-b border-stone-100">
             <div class="flex items-center gap-3">
                 <div class="relative">
@@ -69,10 +73,17 @@
                     <p class="text-[7px] tracking-[0.2em] text-amber-700 mt-1 uppercase font-bold italic">Homemade Choice</p>
                 </div>
             </div>
-            <button onclick="toggleCart()" class="relative p-2.5 bg-stone-50 rounded-full text-stone-700 active:scale-90 transition-transform border border-stone-100">
-                <i class="fas fa-shopping-basket text-lg"></i>
-                <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span>
-            </button>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="toggleLacak()" class="relative p-2.5 bg-stone-50 rounded-full text-stone-700 active:scale-90 transition-transform border border-stone-100">
+                    <i class="fas fa-receipt text-lg"></i>
+                </button>
+
+                <button onclick="toggleCart()" class="relative p-2.5 bg-stone-50 rounded-full text-stone-700 active:scale-90 transition-transform border border-stone-100">
+                    <i class="fas fa-shopping-basket text-lg"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                </button>
+            </div>
         </nav>
 
         <div class="marquee-container">
@@ -128,6 +139,21 @@
         </div>
     </div>
 
+    <div id="modal-lacak" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[2000] px-6">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-slide-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-stone-800 uppercase tracking-widest text-sm italic">Lacak Pesanan</h3>
+                <button onclick="toggleLacak()" class="text-stone-400 p-2"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="space-y-3 mb-6">
+                <input type="tel" id="input-lacak-wa" placeholder="Nomor WA saat pesan (0812...)" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none focus:ring-2 focus:ring-amber-100 font-bold text-stone-700">
+                <button onclick="eksekusiLacak()" class="w-full bg-amber-800 text-white py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-md active:scale-95 transition-all">Cari Pesanan</button>
+            </div>
+            <div id="hasil-lacak" class="max-h-[30vh] overflow-y-auto scrollbar-hide space-y-3">
+                </div>
+        </div>
+    </div>
+
     <div id="layer-tutup" class="fixed inset-0 bg-[#FDFBF7] z-[999] hidden flex flex-col items-center justify-center p-10 text-center">
         <div class="text-4xl font-black mb-6 tracking-tighter italic text-stone-800 uppercase">DOUCEUR DE YANI</div>
         <h1 id="judul-tutup" class="text-2xl font-bold text-stone-800 uppercase tracking-[0.2em]">Toko Sedang Tutup</h1>
@@ -161,7 +187,6 @@
 
     <div id="modal-cart" class="fixed inset-0 bg-black/60 hidden flex items-end justify-center z-[1000] px-4 pb-4">
         <div class="glass-morphism w-full max-w-md rounded-[2.5rem] p-6 shadow-2xl animate-slide-up relative mb-2 max-h-[90vh] overflow-y-auto scrollbar-hide">
-            
             <div class="flex justify-between items-center mb-4 border-b border-stone-200/50 pb-4">
                 <div class="flex flex-col">
                     <h3 class="font-bold text-stone-800 uppercase tracking-widest text-sm">Pesanan Anda</h3>
@@ -236,8 +261,11 @@
         let kategoriSekarang = 'Semua';
         let itemAktif = null;
         let dataPembeliTemp = { nama: "", wa: "", metode: "", alamat: "" };
+        
+        // FITUR 2: Mengambil daftar ID favorit dari Local Storage perangkat
+        let daftarFavorit = JSON.parse(localStorage.getItem('favorit_yani')) || [];
 
-        // MONITOR PENGATURAN TOKO (STATUS BUKA/TUTUP)
+        // MONITOR PENGATURAN TOKO (STATUS BUKA/TUTUP & PROMO)
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
             const data = doc.data();
             if (!data) return;
@@ -245,6 +273,11 @@
             if (data.sk) {
                 const wadahSK = document.getElementById('teks-sk-pelanggan');
                 wadahSK.innerHTML = data.sk.split('\n').map(line => `<p>${line}</p>`).join('');
+            }
+
+            // Jika ada field teksPromo di firebase nanti, banner akan otomatis berubah
+            if(data.teksPromo) {
+                document.getElementById('promo-text').innerText = data.teksPromo;
             }
 
             const sekarang = new Date();
@@ -263,7 +296,7 @@
             }
         });
 
-        // MONITOR DATA MENU (DAN PERBAIKAN KATEGORI)
+        // MONITOR DATA MENU
         db.collection("menuToko").orderBy("tgl", "desc").onSnapshot((snapshot) => {
             semuaMenu = [];
             daftarKategoriTema.clear();
@@ -271,8 +304,6 @@
             snapshot.forEach((doc) => { 
                 const data = doc.data();
                 semuaMenu.push({ id: doc.id, ...data }); 
-                
-                // PERBAIKAN: Gunakan .trim() untuk memastikan kategori yang sama tidak dobel
                 if(data.kategoriTema) {
                     const namaKatBersih = data.kategoriTema.trim();
                     if(namaKatBersih !== 'Reguler' && namaKatBersih !== '') {
@@ -301,14 +332,15 @@
             else { alamat.classList.add('hidden'); info.classList.remove('hidden'); }
         }
 
-        // RENDER TOMBOL FILTER (PERBAIKAN DOBLO KATEGORI)
+        // RENDER TOMBOL FILTER KATEGORI (Ditambah Filter Favorit)
         function renderFilterKategori() {
             const wadah = document.getElementById('container-filter');
             let html = `<button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>`;
-
-            // Urutkan kategori agar rapi
-            const listKategoriSorted = Array.from(daftarKategoriTema).sort();
             
+            // FITUR 2: Tombol Filter Favorit
+            html += `<button onclick="filterKategori('Favorit', this)" class="btn-filter bg-white text-red-500 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-100 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-heart text-[8px] mr-1"></i> Favorit</button>`;
+
+            const listKategoriSorted = Array.from(daftarKategoriTema).sort();
             listKategoriSorted.forEach(kat => {
                 html += `<button onclick="filterKategori('${kat}', this)" class="btn-filter bg-amber-50 text-amber-800 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-200 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-star text-[8px] mr-1"></i> ${kat}</button>`;
             });
@@ -333,6 +365,9 @@
 
                 let badgePO = item.sistemPO === 'Pre-Order' ? `<div class="absolute top-4 left-4 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border border-purple-200 z-10">PRE-ORDER</div>` : '';
                 let labelBeliKilat = item.sistemPO === 'Pre-Order' ? 'PO Kilat' : 'Beli Kilat';
+                
+                // Cek status favorit
+                let isFavorit = daftarFavorit.includes(item.id);
 
                 const card = `
                     <div class="bg-white rounded-[2.5rem] shadow-md border border-stone-50 overflow-hidden relative animate-fade-in group">
@@ -340,10 +375,13 @@
                             <img src="${gambarPertama}" data-images='${dataGambarAttr}' loading="lazy" class="w-full h-full object-cover slideshow-img ${isHabis ? 'sold-out-img' : ''} transition-transform duration-700 group-hover:scale-110">
                             ${badgePO}
                             ${item.kategoriTema && item.kategoriTema.trim() !== 'Reguler' ? `<div class="absolute top-4 right-4 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-2xl shadow-sm text-[9px] font-black uppercase tracking-widest border border-amber-200"><i class="fas fa-gift mr-1"></i> ${item.kategoriTema}</div>` : ''}
-                            ${isBestSeller ? `<div class="absolute bottom-4 left-4 bg-amber-800 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase shadow-lg">bestseller</div>` : ''}
+                            ${isBestSeller ? `<div class="absolute bottom-4 left-4 bg-amber-800 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase shadow-lg z-10">bestseller</div>` : ''}
                             ${item.hargaCoret && !isHabis ? `<div class="absolute top-16 right-4 badge-diskon">Promo Diskon</div>` : ''}
-                            ${isHabis ? '<div class="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center"><span class="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border-2 border-white animate-pulse">Sold Out</span></div>' : ''}
-                            ${!item.sistemPO || item.sistemPO === 'Ready' ? `<div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[9px] font-bold text-stone-500 uppercase border border-stone-100 z-10">${item.jenis}</div>` : ''}
+                            ${isHabis ? '<div class="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-20"><span class="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border-2 border-white animate-pulse">Sold Out</span></div>' : ''}
+                            
+                            <button onclick="toggleFavorit('${item.id}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-lg shadow-lg border border-stone-100 transition-transform active:scale-75 ${isFavorit ? 'text-red-500' : 'text-stone-300'} z-30">
+                                <i class="fas fa-heart"></i>
+                            </button>
                         </div>
                         <div class="p-8 text-center">
                             <h3 class="text-lg font-black text-stone-800 uppercase tracking-widest leading-tight">${item.nama}</h3>
@@ -353,14 +391,98 @@
                                 ${statusStok}
                             </div>
                             <div class="mb-6 text-amber-900 font-black text-2xl font-serif">${hargaHtml}</div>
-                            <div class="grid grid-cols-2 gap-3">
+                            
+                            <div class="grid grid-cols-[1fr_1fr_auto] gap-2">
                                 <button onclick="bukaModalPilihan('${item.id}', 'keranjang')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Keranjang</button>
                                 <button onclick="bukaModalPilihan('${item.id}', 'kilat')" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">${labelBeliKilat}</button>
+                                <button onclick="bagikanProduk('${item.nama}')" class="bg-stone-50 border border-stone-200 text-stone-500 w-12 rounded-full flex items-center justify-center text-sm active:scale-90 transition-all shadow-sm hover:text-amber-800 hover:border-amber-200"><i class="fas fa-share-alt"></i></button>
                             </div>
                         </div>
                     </div>`;
                 wadah.innerHTML += card;
             });
+        }
+
+        // FITUR 2: Logika klik tombol Favorit
+        function toggleFavorit(id) {
+            const index = daftarFavorit.indexOf(id);
+            if (index > -1) {
+                daftarFavorit.splice(index, 1); // Hapus jika sudah ada
+                showToast("Dihapus dari Favorit", "fa-heart-broken");
+            } else {
+                daftarFavorit.push(id); // Tambah jika belum ada
+                showToast("Disimpan ke Favorit ❤️", "fa-heart text-red-500");
+                confetti({ particleCount: 30, spread: 50, origin: { y: 0.9 }, colors: ['#ef4444'] });
+            }
+            localStorage.setItem('favorit_yani', JSON.stringify(daftarFavorit));
+            filterMenu(); // Segarkan tampilan (warna hati akan update)
+        }
+
+        // FITUR 3: Logika Share (Bagikan Produk)
+        function bagikanProduk(namaProduk) {
+            const pesanShare = `Cek menu enak ini dari Douceur De Yani: *${namaProduk}*!\nPesan sekarang yuk: `;
+            const urlToko = window.location.href;
+
+            if (navigator.share) {
+                navigator.share({ title: 'Douceur De Yani', text: pesanShare, url: urlToko }).catch(err => console.log('Batal share', err));
+            } else {
+                // Alternatif jika HP tidak mendukung Web Share API (seperti di komputer)
+                navigator.clipboard.writeText(pesanShare + urlToko);
+                showToast("Link disalin! Silakan paste ke chat teman.", "fa-copy");
+            }
+        }
+
+        // FITUR 1: Logika Modal & Tarik Data Lacak Pesanan
+        function toggleLacak() { 
+            document.getElementById('modal-lacak').classList.toggle('hidden'); 
+            document.getElementById('hasil-lacak').innerHTML = '';
+            document.getElementById('input-lacak-wa').value = '';
+        }
+
+        async function eksekusiLacak() {
+            const inputWa = document.getElementById('input-lacak-wa').value.trim();
+            if(!inputWa) return showToast("Masukkan nomor WA kamu!", "fa-exclamation-triangle");
+
+            const wadahHasil = document.getElementById('hasil-lacak');
+            wadahHasil.innerHTML = '<p class="text-[10px] text-stone-400 text-center italic mt-4"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari riwayat pesanan...</p>';
+
+            try {
+                // Tarik data berdasarkan nomor WA
+                const snapshot = await db.collection("pesanan").where("noWA", "==", inputWa).get();
+                let orders = [];
+                snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
+
+                // Urutkan yang terbaru di atas
+                orders.sort((a,b) => (b.waktuOrder?.seconds || 0) - (a.waktuOrder?.seconds || 0));
+
+                if(orders.length === 0) {
+                    wadahHasil.innerHTML = '<div class="bg-red-50 p-4 rounded-xl border border-red-100 text-center"><p class="text-[10px] font-bold text-red-500 uppercase tracking-widest"><i class="fas fa-box-open text-xl mb-2 block"></i>Tidak Ada Pesanan</p><p class="text-[9px] text-red-400 mt-1">Pastikan nomor WA sama persis saat pesan.</p></div>';
+                    return;
+                }
+
+                let htmlHasil = '';
+                // Hanya tampilkan 5 pesanan terakhir
+                orders.slice(0, 5).forEach((order, idx) => {
+                    const tanggal = order.waktuOrder ? order.waktuOrder.toDate().toLocaleDateString('id-ID', {day: 'numeric', month:'short'}) : 'Baru';
+                    const statusWarna = order.status === 'Selesai' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-100 text-amber-700 border-amber-200';
+                    const rincianPendek = order.detailPesanan.split('\n')[0].substring(3); // Ambil baris pertama menu saja untuk ringkasan
+                    
+                    htmlHasil += `
+                        <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 shadow-sm animate-fade-in" style="animation-delay: ${idx * 0.1}s">
+                            <div class="flex justify-between items-center mb-2 border-b border-stone-200/50 pb-2">
+                                <span class="text-[9px] font-bold text-stone-400"><i class="far fa-calendar-alt"></i> ${tanggal}</span>
+                                <span class="text-[8px] font-black uppercase px-2 py-1 rounded border ${statusWarna} shadow-sm">${order.status || 'Baru Masuk'}</span>
+                            </div>
+                            <p class="text-[10px] text-stone-700 font-bold mb-1">${rincianPendek} ...</p>
+                            <p class="text-[9px] text-stone-400 font-bold">Total: Rp ${(order.totalHarga || 0).toLocaleString('id-ID')}</p>
+                        </div>`;
+                });
+                wadahHasil.innerHTML = htmlHasil;
+
+            } catch(e) {
+                console.error(e);
+                wadahHasil.innerHTML = '<p class="text-[10px] text-red-500 text-center mt-4">Gagal menghubungkan ke database.</p>';
+            }
         }
 
         setInterval(() => {
@@ -447,7 +569,7 @@
             btn.disabled = !isChecked; btn.className = isChecked ? "bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95" : "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none";
         }
 
-        // DATABASE PROCESS (PENGURANGAN STOK)
+        // DATABASE PROCESS 
         async function prosesKeDatabase() {
             const btn = document.getElementById('btn-lanjut-wa');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...'; btn.disabled = true;
@@ -474,8 +596,14 @@
                 };
 
                 await db.collection("pesanan").add(dataPesanan);
+                
                 for (const item of itemUntukDikurangi) {
-                    if (item.id) await db.collection("menuToko").doc(item.id).update({ stok: firebase.firestore.FieldValue.increment(-item.qty) });
+                    if (item.id) {
+                        await db.collection("menuToko").doc(item.id).update({ 
+                            stok: firebase.firestore.FieldValue.increment(-item.qty),
+                            pin: "yani123" 
+                        });
+                    }
                 }
 
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -487,6 +615,7 @@
                     toggleAlamat(); btn.innerHTML = 'Kirim Pesanan';
                 }, 2000);
             } catch (error) {
+                console.error(error);
                 showToast("Terjadi kesalahan koneksi.", "fa-wifi"); btn.innerHTML = 'Kirim Pesanan'; btn.disabled = false;
             }
         }
@@ -496,12 +625,17 @@
             const keyword = document.getElementById('input-cari').value.toLowerCase();
             const hasilFilter = semuaMenu.filter(item => { 
                 let cocokKategori = false;
-                if(kategoriSekarang === 'Semua') cocokKategori = true;
-                else {
-                    // Sinkronisasi pembersihan spasi saat filtering
+                
+                if(kategoriSekarang === 'Semua') {
+                    cocokKategori = true;
+                } else if(kategoriSekarang === 'Favorit') {
+                    // FITUR 2: Tampilkan hanya jika ID produk ada di daftar favorit
+                    cocokKategori = daftarFavorit.includes(item.id);
+                } else {
                     const katItem = item.kategoriTema ? item.kategoriTema.trim() : 'Reguler';
                     cocokKategori = (katItem === kategoriSekarang); 
                 }
+
                 return cocokKategori && item.nama.toLowerCase().includes(keyword); 
             });
             tampilkanMenu(hasilFilter);
@@ -509,10 +643,21 @@
 
         function filterKategori(kat, element) {
             kategoriSekarang = kat;
+            
+            // Reset semua tombol menjadi gaya biasa (Putih border biasa)
             document.querySelectorAll('.btn-filter').forEach(btn => { 
                 btn.className = "btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap";
             });
-            element.className = "btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap";
+            
+            // Berikan gaya aktif sesuai kategori (Hitam untuk 'Semua', Merah untuk 'Favorit', Kuning untuk lainnya)
+            if (kat === 'Semua') {
+                element.className = "btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap";
+            } else if (kat === 'Favorit') {
+                element.className = "btn-filter bg-red-50 text-red-500 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-200 shadow-sm transition-all whitespace-nowrap";
+            } else {
+                element.className = "btn-filter bg-amber-100 text-amber-900 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-300 shadow-sm transition-all whitespace-nowrap";
+            }
+            
             filterMenu();
         }
 
@@ -535,7 +680,7 @@
             document.getElementById('dp-keranjang').innerText = formatRupiah(totalDuit / 2);
         }
 
-        function resetKeranjang() { if(confirm("Hapus semua?")) { keranjang = []; updateUIKeranjang(); } }
+        function resetKeranjang() { if(confirm("Hapus semua isi keranjang?")) { keranjang = []; updateUIKeranjang(); } }
         function hapusItem(index) { keranjang.splice(index, 1); updateUIKeranjang(); }
         function toggleCart() { document.getElementById('modal-cart').classList.toggle('hidden'); }
         
