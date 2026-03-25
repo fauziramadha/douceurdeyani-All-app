@@ -71,6 +71,7 @@
             </div>
 
             <div id="ruangan-produk" class="space-y-8 block">
+                
                 <section class="bg-white p-6 rounded-[2.5rem] card-shadow border border-stone-100">
                     <h2 class="font-bold text-[10px] uppercase tracking-widest mb-4 text-stone-400 text-center">Jadwal Operasional</h2>
                     <div class="space-y-4">
@@ -95,7 +96,7 @@
                 </section>
 
                 <section class="bg-white p-6 rounded-[2.5rem] card-shadow border border-stone-100" id="form-menu-section">
-                    <h2 id="judul-form-menu" class="font-bold text-[10px] uppercase tracking-widest mb-4 text-stone-400 text-center">Tambah Menu Baru</h2>
+                    <h2 id="judul-form-menu" class="font-bold text-[10px] uppercase tracking-widest mb-4 text-stone-400 text-center">Kelola Menu Produk</h2>
                     <div class="space-y-4">
                         <textarea id="link-gambar" rows="2" placeholder="Link foto (pisahkan dengan koma jika banyak)" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none focus:ring-2 focus:ring-amber-100 outline-none" oninput="cekPreview(this.value)"></textarea>
 
@@ -111,11 +112,17 @@
                             <input type="text" id="kategori-tema" list="saran-kategori" placeholder="Contoh: Reguler, Hampers Lebaran" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none">
                             <datalist id="saran-kategori">
                                 <option value="Reguler">
-                                <option value="Roti">
+                                <option value="Best Seller">
+                                <option value="Roti Pcs">
                                 <option value="Kue Kering">
+                                <option value="Hampers Lebaran">
+                                <option value="Paket Ramadhan">
                                 <option value="Hampers Idul Fitri">
+                                <option value="Spesial Imlek">
                                 <option value="Spesial Valentine">
-                                <option value="Promo Akhir Tahun">
+                                <option value="Promo Kilat">
+                                <option value="Menu Baru">
+                                <option value="Gift Box">
                             </datalist>
                         </div>
 
@@ -159,6 +166,14 @@
                             <button onclick="simpanDataMenu()" id="btn-simpan-menu" class="flex-[2] py-5 bg-amber-800 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-lg active:scale-95 transition-all">SIMPAN PRODUK</button>
                         </div>
                     </div>
+                </section>
+
+                <section class="bg-white p-6 rounded-[2.5rem] card-shadow border border-amber-100 mb-8">
+                    <h2 class="font-bold text-[10px] uppercase tracking-widest mb-4 text-stone-400 text-center">Tombol Kategori di Web Pelanggan</h2>
+                    <div id="daftar-kategori-manager" class="flex flex-wrap gap-2 justify-center">
+                        <p class="text-[10px] text-stone-300 italic">Memuat kategori...</p>
+                    </div>
+                    <p class="text-[8px] text-stone-400 text-center mt-4 italic">*Hapus kategori untuk memindahkan produk di dalamnya ke 'Reguler'</p>
                 </section>
 
                 <h3 class="text-[10px] font-black text-stone-400 uppercase tracking-[0.4em] text-center">Produk Terpasang</h3>
@@ -214,22 +229,19 @@
         let editModeId = null;
         let currentDataMenus = {};
 
-        function switchTab(tabName) {
-            const tabs = ['produk', 'pesanan', 'laporan'];
-            tabs.forEach(tab => {
-                const btn = document.getElementById(`tab-btn-${tab}`);
-                const ruang = document.getElementById(`ruangan-${tab}`);
-                if (tab === tabName) {
-                    btn.classList.add('tab-active', 'font-bold');
-                    ruang.classList.remove('hidden');
-                } else {
-                    btn.classList.remove('tab-active', 'font-bold');
-                    ruang.classList.add('hidden');
-                }
-            });
-            if (tabName === 'pesanan') document.getElementById('badge-pesanan-baru').classList.add('hidden');
-        }
+        // Inisialisasi Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyByGpucXRAToCpkTLf9R-k1YqDQ75Zm5_E",
+          authDomain: "douceurdeyani.firebaseapp.com",
+          projectId: "douceurdeyani",
+          storageBucket: "douceurdeyani.firebasestorage.app",
+          messagingSenderId: "349596738343",
+          appId: "1:349596738343:web:a2ab4e333b42a68b3fbf02"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
+        // FUNGSI LOGIN & TAB
         window.onload = function() {
             if (localStorage.getItem('ownerLoggedIn') === 'true') {
                 document.getElementById('login-overlay').style.display = 'none';
@@ -253,23 +265,29 @@
             if(confirm("Keluar dari dashboard?")) { localStorage.removeItem('ownerLoggedIn'); location.reload(); }
         }
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyByGpucXRAToCpkTLf9R-k1YqDQ75Zm5_E",
-          authDomain: "douceurdeyani.firebaseapp.com",
-          projectId: "douceurdeyani",
-          storageBucket: "douceurdeyani.firebasestorage.app",
-          messagingSenderId: "349596738343",
-          appId: "1:349596738343:web:a2ab4e333b42a68b3fbf02"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        function switchTab(tabName) {
+            ['produk', 'pesanan', 'laporan'].forEach(tab => {
+                const btn = document.getElementById(`tab-btn-${tab}`);
+                const ruang = document.getElementById(`ruangan-${tab}`);
+                if (tab === tabName) {
+                    btn.classList.add('tab-active', 'font-bold');
+                    ruang.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('tab-active', 'font-bold');
+                    ruang.classList.add('hidden');
+                }
+            });
+            if (tabName === 'pesanan') document.getElementById('badge-pesanan-baru').classList.add('hidden');
+        }
 
+        // FUNGSI VARIANT HARGA
         function cekVarian(val) {
             const boxBiasa = document.getElementById('box-harga-biasa'), boxKue = document.getElementById('box-harga-kue'), boxCoret = document.getElementById('box-harga-coret'); 
             if(val === 'Kue') { boxBiasa.classList.add('hidden'); boxCoret.classList.add('hidden'); boxKue.classList.remove('hidden'); } 
             else { boxBiasa.classList.remove('hidden'); boxCoret.classList.remove('hidden'); boxKue.classList.add('hidden'); }
         }
 
+        // PENGATURAN TOKO (STATUS, JAM, SK)
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
             const data = doc.data() || { isOpen: true, buka: "07:00", tutup: "21:00", sk: "" };
             const btn = document.getElementById('btn-toggle-toko');
@@ -286,6 +304,7 @@
         async function simpanJam() { await db.collection("pengaturan").doc("toko").set({ buka: document.getElementById('jam-buka').value, tutup: document.getElementById('jam-tutup').value, pin: PIN_AKSES }, { merge: true }); alert("Jadwal Diupdate!"); }
         async function simpanSK() { await db.collection("pengaturan").doc("toko").set({ sk: document.getElementById('input-sk').value, pin: PIN_AKSES }, { merge: true }); alert("S&K Diupdate!"); }
 
+        // PREVIEW GAMBAR
         function cekPreview(val) {
             const urls = val.split(/,|\n/).map(u => u.trim()).filter(u => u !== "");
             const img = document.getElementById('img-preview'); const txt = document.getElementById('text-preview');
@@ -293,15 +312,19 @@
             else { img.src = ""; img.classList.add('hidden'); txt.classList.remove('hidden'); }
         }
 
+        // SIMPAN / EDIT MENU
         async function simpanDataMenu() {
             const btn = document.getElementById('btn-simpan-menu');
-            const jenis = document.getElementById('jenis').value, nama = document.getElementById('nama').value, kategoriTema = document.getElementById('kategori-tema').value || 'Reguler'; 
-            const linkRaw = document.getElementById('link-gambar').value, stok = document.getElementById('stok').value;
-            const sistemPO = document.getElementById('sistem-po').value;
+            const jenis = document.getElementById('jenis').value, 
+                  nama = document.getElementById('nama').value, 
+                  kategoriTema = document.getElementById('kategori-tema').value.trim() || 'Reguler'; 
+            const linkRaw = document.getElementById('link-gambar').value, 
+                  stok = document.getElementById('stok').value,
+                  sistemPO = document.getElementById('sistem-po').value;
             const linkArray = linkRaw.split(/,|\n/).map(u => u.trim()).filter(u => u !== "");
 
             if(!nama || linkArray.length === 0 || !stok) return alert("Nama, Foto, dan Stok wajib diisi!");
-            btn.disabled = true; btn.innerHTML = editModeId ? "MENYIMPAN..." : "MENYIMPAN...";
+            btn.disabled = true;
 
             let dataProduk = {
                 nama, jenis, kategoriTema, gambar: linkArray, pin: PIN_AKSES,
@@ -327,19 +350,68 @@
                 if (editModeId) await db.collection("menuToko").doc(editModeId).update(dataProduk);
                 else await db.collection("menuToko").add(dataProduk);
                 alert("Berhasil disimpan!"); batalEdit();
-            } catch (e) { alert("Error!"); btn.disabled = false; btn.innerHTML = editModeId ? "SIMPAN PERUBAHAN" : "SIMPAN PRODUK"; }
+            } catch (e) { alert("Error!"); btn.disabled = false; }
         }
 
+        // FUNGSI BARU: MANAGER KATEGORI (REALTIME)
+        db.collection("menuToko").onSnapshot(snapshot => {
+            let kategoriSet = new Set();
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                if(d.kategoriTema && d.kategoriTema.trim() !== 'Reguler' && d.kategoriTema.trim() !== '') {
+                    kategoriSet.add(d.kategoriTema.trim());
+                }
+            });
+
+            const wadah = document.getElementById('daftar-kategori-manager');
+            if(kategoriSet.size === 0) {
+                wadah.innerHTML = '<p class="text-[10px] text-stone-300 italic">Tidak ada kategori khusus aktif</p>';
+                return;
+            }
+
+            let html = "";
+            kategoriSet.forEach(kat => {
+                html += `
+                    <div class="flex items-center gap-2 bg-stone-50 px-3 py-2 rounded-xl border border-stone-100 shadow-sm animate-fade-in">
+                        <span class="text-[9px] font-black text-stone-700 uppercase tracking-widest">${kat}</span>
+                        <button onclick="hapusSeluruhKategori('${kat}')" class="text-red-400 hover:text-red-600 transition-colors ml-1">
+                            <i class="fas fa-times-circle text-sm"></i>
+                        </button>
+                    </div>`;
+            });
+            wadah.innerHTML = html;
+        });
+
+        // FUNGSI BARU: HAPUS TOMBOL KATEGORI
+        async function hapusSeluruhKategori(namaKat) {
+            if(confirm(`Hapus tombol "${namaKat}"? Semua produk di dalamnya akan dipindah ke 'Reguler'.`)) {
+                try {
+                    const snapshot = await db.collection("menuToko").where("kategoriTema", "==", namaKat).get();
+                    if (snapshot.empty) return alert("Kategori sudah kosong.");
+
+                    const batch = db.batch();
+                    snapshot.forEach(doc => {
+                        // Pastikan menyertakan PIN sesuai Rules Firebase
+                        batch.update(doc.ref, { kategoriTema: "Reguler", pin: PIN_AKSES });
+                    });
+
+                    await batch.commit();
+                    alert(`Kategori "${namaKat}" berhasil dihapus dari web pelanggan.`);
+                } catch (error) {
+                    alert("Error: " + error.message);
+                }
+            }
+        }
+
+        // LIST MENU REALTIME
         db.collection("menuToko").orderBy("tgl", "desc").onSnapshot(snapshot => {
             const wadah = document.getElementById('list-menu'); let htmlHTML = ""; currentDataMenus = {};
             snapshot.forEach(doc => {
                 const item = doc.data(); currentDataMenus[doc.id] = item;
                 let arrayGambar = Array.isArray(item.gambar) ? item.gambar : [item.gambar];
                 let gambarPertama = arrayGambar[0];
-                let dataGambarAttr = JSON.stringify(arrayGambar).replace(/'/g, "&#39;");
                 let badgeSoldOut = item.stok <= 0 ? `<div class="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-full z-10 shadow-lg">SOLD OUT</div>` : '';
                 let kategoriBadge = item.kategoriTema && item.kategoriTema !== 'Reguler' ? `<span class="bg-amber-100 text-amber-800 text-[8px] px-2 py-0.5 rounded-full font-bold ml-2">${item.kategoriTema}</span>` : '';
-                
                 let poBadge = item.sistemPO === 'Pre-Order' ? `<span class="bg-purple-100 text-purple-700 text-[8px] px-2 py-0.5 rounded-full font-black ml-1 border border-purple-200">PRE-ORDER</span>` : '';
 
                 htmlHTML += `
@@ -347,7 +419,7 @@
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 rounded-2xl bg-stone-100 overflow-hidden relative border border-stone-200">
                                 ${badgeSoldOut}
-                                <img src="${gambarPertama}" data-images='${dataGambarAttr}' class="w-full h-full img-fit slideshow-img" onerror="this.src='https://placehold.co/200x200?text=Error'">
+                                <img src="${gambarPertama}" data-images='${JSON.stringify(arrayGambar)}' class="w-full h-full img-fit slideshow-img">
                             </div>
                             <div class="flex-1">
                                 <h4 class="font-black text-stone-800 text-[11px] uppercase">${item.nama} ${kategoriBadge} ${poBadge}</h4>
@@ -368,50 +440,7 @@
             wadah.innerHTML = htmlHTML;
         });
 
-        db.collection("pesanan").onSnapshot(snapshot => {
-            let totalOmzet = 0, totalPesananSelesai = 0;
-            snapshot.forEach(doc => {
-                const order = doc.data();
-                if(order.status === 'Selesai') { totalPesananSelesai++; totalOmzet += Number(order.totalHarga || 0); }
-            });
-            document.getElementById('teks-omzet').innerText = "Rp " + totalOmzet.toLocaleString('id-ID');
-            document.getElementById('teks-pesanan-selesai').innerText = totalPesananSelesai;
-        });
-
-        db.collection("menuToko").orderBy("terjual", "desc").limit(5).onSnapshot(snapshot => {
-            const wadahTerlaris = document.getElementById('list-terlaris');
-            let htmlTerlaris = '', rank = 1;
-            snapshot.forEach(doc => {
-                const item = doc.data();
-                if ((item.terjual || 0) > 0) {
-                    let warnaMedali = rank === 1 ? 'text-yellow-400' : (rank === 2 ? 'text-gray-400' : (rank === 3 ? 'text-amber-600' : 'text-stone-300'));
-                    let arrayGambar = Array.isArray(item.gambar) ? item.gambar : [item.gambar];
-                    htmlTerlaris += `
-                        <div class="flex items-center gap-4 bg-stone-50 p-3 rounded-2xl border border-stone-100">
-                            <div class="font-black ${warnaMedali} w-4 text-center">#${rank}</div>
-                            <div class="w-10 h-10 rounded-xl bg-white overflow-hidden shadow-sm"><img src="${arrayGambar[0]}" class="w-full h-full object-cover"></div>
-                            <div class="flex-1"><h4 class="font-black text-stone-800 text-[10px] uppercase">${item.nama}</h4></div>
-                            <div class="bg-white px-3 py-1 rounded-lg shadow-sm"><span class="font-black text-amber-600 text-[10px]">${item.terjual} Pcs</span></div>
-                        </div>`;
-                    rank++;
-                }
-            });
-            if (htmlTerlaris !== '') wadahTerlaris.innerHTML = htmlTerlaris;
-        });
-
-        setInterval(() => {
-            document.querySelectorAll('.slideshow-img').forEach(img => {
-                try {
-                    const urls = JSON.parse(img.getAttribute('data-images'));
-                    if(urls.length > 1) {
-                        let currentIndex = parseInt(img.getAttribute('data-index') || "0");
-                        currentIndex = (currentIndex + 1) % urls.length;
-                        img.src = urls[currentIndex]; img.setAttribute('data-index', currentIndex);
-                    }
-                } catch(e){}
-            });
-        }, 1500);
-
+        // EDIT & HAPUS MENU
         function siapkanEdit(id) {
             const item = currentDataMenus[id]; if(!item) return; editModeId = id; 
             document.getElementById('judul-form-menu').innerText = "Edit Menu: " + item.nama;
@@ -434,7 +463,8 @@
             ['nama','link-gambar','stok','harga','harga-coret','harga250','harga500','harga1000','berat-manual','kategori-tema'].forEach(id => document.getElementById(id).value = '');
             cekPreview(''); document.getElementById('jenis').value = 'Kue'; cekVarian('Kue');
             document.getElementById('sistem-po').value = 'Ready'; 
-            document.getElementById('btn-simpan-menu').innerHTML = "SIMPAN PRODUK"; document.getElementById('btn-batal-edit').classList.add('hidden');
+            document.getElementById('btn-simpan-menu').innerHTML = "SIMPAN PRODUK"; document.getElementById('btn-simpan-menu').disabled = false;
+            document.getElementById('btn-batal-edit').classList.add('hidden');
         }
 
         async function updateStok(id, change) {
@@ -444,18 +474,7 @@
         }
         async function hapusMenu(id) { if(confirm("Hapus menu ini?")) await db.collection("menuToko").doc(id).delete(); }
 
-        // ================= SISTEM PESANAN PENUH =================
-        async function updateStatusPesanan(id, statusBaru) {
-            if(confirm(`Ubah status pesanan menjadi ${statusBaru}?`)) {
-                await db.collection("pesanan").doc(id).update({ status: statusBaru });
-            }
-        }
-        async function hapusPesanan(id) {
-            if(confirm("Hapus pesanan ini dari daftar? Data tidak bisa dikembalikan.")) {
-                await db.collection("pesanan").doc(id).delete();
-            }
-        }
-
+        // SISTEM PESANAN & WHATSAPP
         db.collection("pesanan").orderBy("waktuOrder", "desc").onSnapshot(snapshot => {
             const listPesanan = document.getElementById('list-pesanan');
             if (!snapshot.empty && !document.getElementById('tab-btn-pesanan').classList.contains('tab-active')) {
@@ -469,102 +488,80 @@
             let orderHtml = '';
             snapshot.forEach(doc => {
                 const order = doc.data();
-                
-                let nomorWABersih = order.noWA || "";
-                nomorWABersih = nomorWABersih.replace(/\D/g, ''); 
-                if (nomorWABersih.startsWith('0')) {
-                    nomorWABersih = '62' + nomorWABersih.substring(1);
-                }
+                let nomorWABersih = (order.noWA || "").replace(/\D/g, ''); 
+                if (nomorWABersih.startsWith('0')) nomorWABersih = '62' + nomorWABersih.substring(1);
 
-                let waktuTeks = order.waktuOrder ? (order.waktuOrder.toDate ? order.waktuOrder.toDate().toLocaleString('id-ID', {day: 'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : "Waktu tdk diketahui") : "Baru saja";
-
-                let statusLabelClass = order.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
-                                      (order.status === 'Diproses' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800 animate-pulse');
+                let waktuTeks = order.waktuOrder ? (order.waktuOrder.toDate ? order.waktuOrder.toDate().toLocaleString('id-ID', {day: 'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : "...") : "Baru";
                 let statusTeks = order.status || 'Baru Masuk';
 
-                let tombolAksi = '';
-                if(statusTeks === 'Baru Masuk' || !order.status) {
-                    tombolAksi = `<button onclick="updateStatusPesanan('${doc.id}', 'Diproses')" class="flex-1 bg-blue-500 text-white py-2 rounded-xl text-[9px] font-black uppercase active:scale-95 shadow-md">Proses Pesanan</button>`;
-                } else if(statusTeks === 'Diproses') {
-                    tombolAksi = `<button onclick="updateStatusPesanan('${doc.id}', 'Selesai')" class="flex-1 bg-green-500 text-white py-2 rounded-xl text-[9px] font-black uppercase active:scale-95 shadow-md">Tandai Selesai</button>`;
-                } else {
-                    tombolAksi = `<button disabled class="flex-1 bg-stone-100 text-stone-400 py-2 rounded-xl text-[9px] font-black uppercase border border-stone-200">Pesanan Selesai</button>`;
-                }
-
-                // ==============================
-                // FORMAT PESAN WA KE PELANGGAN
-                // ==============================
-                const totalHargaAsli = order.totalHarga || 0;
-                const dpHargaAsli = totalHargaAsli / 2;
-                const totalFormat = totalHargaAsli.toLocaleString('id-ID');
-                const dpFormat = dpHargaAsli.toLocaleString('id-ID');
-
-                // Kita cari tau metode pengiriman dari detail pesanan
-                let metodeKirim = "Pick Up";
-                let alamatKirim = "";
-                if (order.detailPesanan.includes("📦 Metode: Kurir")) {
-                    metodeKirim = "Kurir";
-                    // Mencari baris alamat dengan Regex
-                    const matchAlamat = order.detailPesanan.match(/📍 Alamat: (.*)/);
-                    if (matchAlamat) {
-                        alamatKirim = matchAlamat[1];
-                    }
-                }
-
-                // Ambil daftar barang pesanan (hilangkan baris metode, note, dll)
-                let barisDetail = order.detailPesanan.split('\n');
-                let barangSaja = "";
-                for (let baris of barisDetail) {
-                    if (baris.startsWith("📦") || baris.startsWith("📍") || baris.startsWith("⚠️") || baris.startsWith("💳") || baris.trim() === "") {
-                        continue;
-                    }
-                    barangSaja += baris + "\n";
-                }
-
-                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sedang kami proses ya 😊\n\n`;
-                templatePesan += `*Rincian Pesanan:*\n${barangSaja}\n`;
-                
-                if (metodeKirim === 'Kurir') {
-                    templatePesan += `*Metode:* Pengiriman via Kurir\n*Alamat:* ${alamatKirim}\n\n`;
-                } else {
-                    templatePesan += `*Metode:* Ambil Sendiri (Pick Up)\n\n`;
-                }
-
-                templatePesan += `*Total Tagihan:* Rp ${totalFormat}\n`;
-                templatePesan += `*Minimal DP (50%):* Rp ${dpFormat}\n\n`;
-                templatePesan += `_Sebelum melanjutkan proses pesanan, mohon melakukan pembayaran wajib DP 50% terlebih dahulu ya kak._\n\nTerima kasih banyak! 🙏`;
-
-                let waPesan = encodeURIComponent(templatePesan);
-                // ==============================
+                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sedang diproses ya 😊\n\n*Rincian Pesanan:*\n${order.detailPesanan}\n\nTerima kasih! 🙏`;
 
                 orderHtml += `
-                    <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative">
-                        <button onclick="hapusPesanan('${doc.id}')" class="absolute top-4 right-4 text-stone-300 hover:text-red-500 transition-colors"><i class="fas fa-times"></i></button>
-                        
+                    <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative animate-fade-in">
+                        <button onclick="hapusPesanan('${doc.id}')" class="absolute top-4 right-4 text-stone-300 hover:text-red-500"><i class="fas fa-times"></i></button>
                         <div class="flex justify-between items-start border-b border-stone-100 pb-3 pr-6">
                             <div>
                                 <h4 class="font-black text-stone-800 text-xs uppercase">${order.namaPelanggan}</h4>
                                 <p class="text-[9px] text-stone-400 font-bold mb-1"><i class="fas fa-phone-alt"></i> ${order.noWA}</p>
                                 <p class="text-[8px] text-stone-300 font-bold"><i class="far fa-clock"></i> ${waktuTeks}</p>
                             </div>
-                            <span class="${statusLabelClass} text-[9px] px-3 py-1 rounded-full font-black uppercase border border-white outline outline-1 outline-stone-100">${statusTeks}</span>
+                            <span class="text-[9px] px-3 py-1 rounded-full font-black uppercase border border-stone-100 ${statusTeks === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${statusTeks}</span>
                         </div>
-                        
-                        <div class="text-[11px] font-bold text-stone-600 bg-stone-50 p-3 rounded-xl border border-stone-100 leading-relaxed">
-                            ${order.detailPesanan || "Detail pesanan tidak tersedia"} 
-                            <br><span class="text-amber-700 mt-1 block">Total Tagihan: Rp ${(order.totalHarga || 0).toLocaleString('id-ID')}</span>
-                        </div>
-                        
-                        <div class="flex gap-2 mt-1">
-                            ${tombolAksi}
-                            <button onclick="window.open('https://wa.me/${nomorWABersih}?text=${waPesan}', '_blank')" class="flex-[0.3] bg-stone-800 text-white py-2 rounded-xl text-[10px] flex justify-center items-center active:scale-95 shadow-md">
-                                <i class="fab fa-whatsapp"></i>
-                            </button>
+                        <div class="text-[11px] font-bold text-stone-600 bg-stone-50 p-3 rounded-xl border border-stone-100 whitespace-pre-wrap">${order.detailPesanan}</div>
+                        <div class="flex gap-2">
+                            ${statusTeks !== 'Selesai' ? `<button onclick="updateStatusPesanan('${doc.id}', 'Selesai')" class="flex-1 bg-green-500 text-white py-2 rounded-xl text-[9px] font-black uppercase shadow-md">Tandai Selesai</button>` : `<button disabled class="flex-1 bg-stone-100 text-stone-400 py-2 rounded-xl text-[9px] font-black uppercase">Sudah Selesai</button>`}
+                            <button onclick="window.open('https://wa.me/${nomorWABersih}?text=${encodeURIComponent(templatePesan)}', '_blank')" class="bg-stone-800 text-white px-4 rounded-xl flex items-center justify-center shadow-md"><i class="fab fa-whatsapp"></i></button>
                         </div>
                     </div>`;
             });
             listPesanan.innerHTML = orderHtml;
         });
+
+        async function updateStatusPesanan(id, statusBaru) { if(confirm(`Ubah ke ${statusBaru}?`)) await db.collection("pesanan").doc(id).update({ status: statusBaru }); }
+        async function hapusPesanan(id) { if(confirm("Hapus pesanan ini?")) await db.collection("pesanan").doc(id).delete(); }
+
+        // LAPORAN OMZET & TERLARIS
+        db.collection("pesanan").onSnapshot(snapshot => {
+            let totalOmzet = 0, totalPesananSelesai = 0;
+            snapshot.forEach(doc => {
+                const order = doc.data();
+                if(order.status === 'Selesai') { totalPesananSelesai++; totalOmzet += Number(order.totalHarga || 0); }
+            });
+            document.getElementById('teks-omzet').innerText = "Rp " + totalOmzet.toLocaleString('id-ID');
+            document.getElementById('teks-pesanan-selesai').innerText = totalPesananSelesai;
+        });
+
+        db.collection("menuToko").orderBy("terjual", "desc").limit(5).onSnapshot(snapshot => {
+            const wadahTerlaris = document.getElementById('list-terlaris');
+            let htmlTerlaris = '', rank = 1;
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                if ((item.terjual || 0) > 0) {
+                    htmlTerlaris += `
+                        <div class="flex items-center gap-4 bg-stone-50 p-3 rounded-2xl border border-stone-100">
+                            <div class="font-black w-4 text-center text-amber-500">#${rank}</div>
+                            <div class="flex-1"><h4 class="font-black text-stone-800 text-[10px] uppercase">${item.nama}</h4></div>
+                            <div class="bg-white px-3 py-1 rounded-lg shadow-sm"><span class="font-black text-amber-600 text-[10px]">${item.terjual} terjual</span></div>
+                        </div>`;
+                    rank++;
+                }
+            });
+            if (htmlTerlaris !== '') wadahTerlaris.innerHTML = htmlTerlaris;
+        });
+
+        // SLIDESHOW IMG (PREVIEW)
+        setInterval(() => {
+            document.querySelectorAll('.slideshow-img').forEach(img => {
+                try {
+                    const urls = JSON.parse(img.getAttribute('data-images'));
+                    if(urls.length > 1) {
+                        let currentIndex = parseInt(img.getAttribute('data-index') || "0");
+                        currentIndex = (currentIndex + 1) % urls.length;
+                        img.src = urls[currentIndex]; img.setAttribute('data-index', currentIndex);
+                    }
+                } catch(e){}
+            });
+        }, 2000);
     </script>
 </body>
 </html>
