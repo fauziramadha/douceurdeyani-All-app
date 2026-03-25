@@ -95,6 +95,17 @@
                     </div>
                 </section>
 
+                <section class="bg-amber-50 p-6 rounded-[2.5rem] card-shadow border border-amber-100">
+                    <h2 class="font-bold text-[10px] uppercase tracking-widest mb-4 text-amber-600 text-center uppercase"><i class="fas fa-bullhorn mr-1"></i> Banner Promo Pelanggan</h2>
+                    <div class="space-y-4">
+                        <textarea id="input-promo" rows="2" placeholder="Tulis teks pengumuman/promo (Kosongkan jika tidak ada)..." class="w-full p-4 bg-white rounded-2xl text-xs border border-amber-200 focus:ring-2 focus:ring-amber-400 outline-none font-bold text-amber-900"></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="hapusPromo()" class="flex-1 py-4 bg-stone-200 text-stone-500 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">Hapus</button>
+                            <button onclick="simpanPromo()" class="flex-[2] py-4 bg-amber-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg">Tampilkan</button>
+                        </div>
+                    </div>
+                </section>
+
                 <section class="bg-white p-6 rounded-[2.5rem] card-shadow border border-stone-100" id="form-menu-section">
                     <h2 id="judul-form-menu" class="font-bold text-[10px] uppercase tracking-widest mb-4 text-stone-400 text-center">Kelola Menu Produk</h2>
                     <div class="space-y-4">
@@ -184,7 +195,7 @@
                 <div class="bg-amber-50 p-6 rounded-[2.5rem] border border-amber-100 text-center mb-6 relative overflow-hidden">
                     <i class="fas fa-shopping-bag absolute -left-4 -top-4 text-amber-200/50 text-6xl"></i>
                     <h2 class="font-black text-amber-800 uppercase tracking-widest text-sm mb-2 relative z-10">Manajemen Pesanan</h2>
-                    <p class="text-[10px] text-amber-700 relative z-10">Pantau, proses, dan hubungi pelanggan.</p>
+                    <p class="text-[10px] text-amber-700 relative z-10">Pantau status & hubungi pelanggan.</p>
                 </div>
                 
                 <div id="list-pesanan" class="space-y-4">
@@ -287,9 +298,9 @@
             else { boxBiasa.classList.remove('hidden'); boxCoret.classList.remove('hidden'); boxKue.classList.add('hidden'); }
         }
 
-        // PENGATURAN TOKO (STATUS, JAM, SK)
+        // PENGATURAN TOKO (STATUS, JAM, SK, PROMO)
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
-            const data = doc.data() || { isOpen: true, buka: "07:00", tutup: "21:00", sk: "" };
+            const data = doc.data() || { isOpen: true, buka: "07:00", tutup: "21:00", sk: "", teksPromo: "" };
             const btn = document.getElementById('btn-toggle-toko');
             btn.innerText = data.isOpen ? "BUKA" : "TUTUP";
             btn.className = data.isOpen ? "px-5 py-2 rounded-xl text-[10px] font-bold bg-green-50 text-green-600 border border-green-200" : "px-5 py-2 rounded-xl text-[10px] font-bold bg-red-50 text-red-600 border border-red-200";
@@ -297,12 +308,17 @@
             document.getElementById('jam-buka').value = data.buka || "07:00";
             document.getElementById('jam-tutup').value = data.tutup || "21:00";
             document.getElementById('input-sk').value = data.sk || "";
+            document.getElementById('input-promo').value = data.teksPromo || ""; // Menarik data promo
             window.statusTGlobal = data.isOpen;
         });
 
         async function toggleToko() { await db.collection("pengaturan").doc("toko").set({ isOpen: !window.statusTGlobal, pin: PIN_AKSES }, { merge: true }); }
         async function simpanJam() { await db.collection("pengaturan").doc("toko").set({ buka: document.getElementById('jam-buka').value, tutup: document.getElementById('jam-tutup').value, pin: PIN_AKSES }, { merge: true }); alert("Jadwal Diupdate!"); }
         async function simpanSK() { await db.collection("pengaturan").doc("toko").set({ sk: document.getElementById('input-sk').value, pin: PIN_AKSES }, { merge: true }); alert("S&K Diupdate!"); }
+        
+        // Fungsi Simpan Promo
+        async function simpanPromo() { await db.collection("pengaturan").doc("toko").set({ teksPromo: document.getElementById('input-promo').value, pin: PIN_AKSES }, { merge: true }); alert("Banner Promo berhasil ditampilkan!"); }
+        async function hapusPromo() { document.getElementById('input-promo').value = ""; await db.collection("pengaturan").doc("toko").set({ teksPromo: "", pin: PIN_AKSES }, { merge: true }); alert("Banner Promo disembunyikan!"); }
 
         // PREVIEW GAMBAR
         function cekPreview(val) {
@@ -382,7 +398,6 @@
             wadah.innerHTML = html;
         });
 
-        // FUNGSI BARU: HAPUS TOMBOL KATEGORI
         async function hapusSeluruhKategori(namaKat) {
             if(confirm(`Hapus tombol "${namaKat}"? Semua produk di dalamnya akan dipindah ke 'Reguler'.`)) {
                 try {
@@ -390,16 +405,10 @@
                     if (snapshot.empty) return alert("Kategori sudah kosong.");
 
                     const batch = db.batch();
-                    snapshot.forEach(doc => {
-                        // Memastikan pin di-pass untuk mematuhi rules firebase "request.resource.data.pin"
-                        batch.update(doc.ref, { kategoriTema: "Reguler", pin: PIN_AKSES });
-                    });
-
+                    snapshot.forEach(doc => { batch.update(doc.ref, { kategoriTema: "Reguler", pin: PIN_AKSES }); });
                     await batch.commit();
                     alert(`Kategori "${namaKat}" berhasil dihapus dari web pelanggan.`);
-                } catch (error) {
-                    alert("Error: " + error.message);
-                }
+                } catch (error) { alert("Error: " + error.message); }
             }
         }
 
@@ -470,7 +479,7 @@
         async function updateStok(id, change) {
             const docRef = db.collection("menuToko").doc(id); const doc = await docRef.get();
             let stokBaru = (Number(doc.data().stok) || 0) + change;
-            if(stokBaru >= 0) await docRef.update({ stok: stokBaru, pin: PIN_AKSES }); // pin diikutkan lagi
+            if(stokBaru >= 0) await docRef.update({ stok: stokBaru, pin: PIN_AKSES });
         }
         async function hapusMenu(id) { if(confirm("Hapus menu ini?")) await db.collection("menuToko").doc(id).delete(); }
 
@@ -494,12 +503,16 @@
                 let waktuTeks = order.waktuOrder ? (order.waktuOrder.toDate ? order.waktuOrder.toDate().toLocaleString('id-ID', {day: 'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : "...") : "Baru";
                 let statusTeks = order.status || 'Baru Masuk';
 
-                // ----- MODIFIKASI PESAN WHATSAPP & TOTAL BELANJA -----
-                let formatTotal = order.totalHarga ? "Rp " + Number(order.totalHarga).toLocaleString('id-ID') : "Rp 0";
-                
-                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sudah kami terima dan sedang diproses ya 😊\n\n*📦 Rincian Pesanan:*\n${order.detailPesanan}\n\n*💰 Total Belanja:* ${formatTotal}\n\nTerima kasih banyak! 🙏`;
-                // ------------------------------------------------------
+                // Modifikasi warna badge status
+                let statusColor = 'bg-stone-100 text-stone-600 border-stone-200';
+                if(statusTeks === 'Selesai') statusColor = 'bg-green-100 text-green-800 border-green-200';
+                else if(statusTeks === 'Sedang Diproses') statusColor = 'bg-amber-100 text-amber-800 border-amber-200';
+                else if(statusTeks === 'Dibatalkan') statusColor = 'bg-red-100 text-red-800 border-red-200';
 
+                let formatTotal = order.totalHarga ? "Rp " + Number(order.totalHarga).toLocaleString('id-ID') : "Rp 0";
+                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sudah kami terima dan sedang diproses ya 😊\n\n*📦 Rincian Pesanan:*\n${order.detailPesanan}\n\n*💰 Total Belanja:* ${formatTotal}\n\nTerima kasih banyak! 🙏`;
+
+                // FITUR BARU: Dropdown Status Pesanan
                 orderHtml += `
                     <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative animate-fade-in">
                         <button onclick="hapusPesanan('${doc.id}')" class="absolute top-4 right-4 text-stone-300 hover:text-red-500"><i class="fas fa-times"></i></button>
@@ -509,21 +522,29 @@
                                 <p class="text-[9px] text-stone-400 font-bold mb-1"><i class="fas fa-phone-alt"></i> ${order.noWA}</p>
                                 <p class="text-[8px] text-stone-300 font-bold"><i class="far fa-clock"></i> ${waktuTeks}</p>
                             </div>
-                            <span class="text-[9px] px-3 py-1 rounded-full font-black uppercase border border-stone-100 ${statusTeks === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${statusTeks}</span>
+                            <span class="text-[9px] px-3 py-1 rounded-full font-black uppercase border ${statusColor}">${statusTeks}</span>
                         </div>
                         <div class="text-[11px] font-bold text-stone-600 bg-stone-50 p-3 rounded-xl border border-stone-100 whitespace-pre-wrap">${order.detailPesanan}</div>
-                        <div class="flex gap-2">
-                            ${statusTeks !== 'Selesai' ? `<button onclick="updateStatusPesanan('${doc.id}', 'Selesai')" class="flex-1 bg-green-500 text-white py-2 rounded-xl text-[9px] font-black uppercase shadow-md">Tandai Selesai</button>` : `<button disabled class="flex-1 bg-stone-100 text-stone-400 py-2 rounded-xl text-[9px] font-black uppercase">Sudah Selesai</button>`}
-                            <button onclick="window.open('https://wa.me/${nomorWABersih}?text=${encodeURIComponent(templatePesan)}', '_blank')" class="bg-stone-800 text-white px-4 rounded-xl flex items-center justify-center shadow-md"><i class="fab fa-whatsapp"></i></button>
+                        
+                        <div class="flex gap-2 items-center mt-2">
+                            <select onchange="updateStatusPesanan('${doc.id}', this.value)" class="flex-1 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-stone-200 bg-stone-50 outline-none focus:ring-2 focus:ring-amber-200 ${statusTeks === 'Selesai' ? 'text-green-600' : 'text-stone-700'}">
+                                <option value="Baru Masuk" ${statusTeks === 'Baru Masuk' ? 'selected' : ''}>Baru Masuk</option>
+                                <option value="Sedang Diproses" ${statusTeks === 'Sedang Diproses' ? 'selected' : ''}>Sedang Diproses</option>
+                                <option value="Selesai" ${statusTeks === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                                <option value="Dibatalkan" ${statusTeks === 'Dibatalkan' ? 'selected' : ''}>Dibatalkan</option>
+                            </select>
+                            <button onclick="window.open('https://wa.me/${nomorWABersih}?text=${encodeURIComponent(templatePesan)}', '_blank')" class="bg-stone-800 text-white px-4 py-3 rounded-xl flex items-center justify-center shadow-md active:scale-95 transition-transform"><i class="fab fa-whatsapp text-lg"></i></button>
                         </div>
                     </div>`;
             });
             listPesanan.innerHTML = orderHtml;
         });
 
-        // Pastikan update status pesanan juga mengirim pin jika secara ajaib Firebase Rules-nya menuntut demikian
-        async function updateStatusPesanan(id, statusBaru) { if(confirm(`Ubah ke ${statusBaru}?`)) await db.collection("pesanan").doc(id).update({ status: statusBaru, pin: PIN_AKSES }); }
-        async function hapusPesanan(id) { if(confirm("Hapus pesanan ini?")) await db.collection("pesanan").doc(id).delete(); }
+        async function updateStatusPesanan(id, statusBaru) { 
+            // Langsung update status tanpa alert konfirmasi agar lebih cepat (bisa ditambahkan confirm() jika perlu)
+            await db.collection("pesanan").doc(id).update({ status: statusBaru, pin: PIN_AKSES }); 
+        }
+        async function hapusPesanan(id) { if(confirm("Hapus pesanan ini secara permanen?")) await db.collection("pesanan").doc(id).delete(); }
 
         // LAPORAN OMZET & TERLARIS
         db.collection("pesanan").onSnapshot(snapshot => {
