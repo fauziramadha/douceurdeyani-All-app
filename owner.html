@@ -350,7 +350,7 @@
                 if (editModeId) await db.collection("menuToko").doc(editModeId).update(dataProduk);
                 else await db.collection("menuToko").add(dataProduk);
                 alert("Berhasil disimpan!"); batalEdit();
-            } catch (e) { alert("Error!"); btn.disabled = false; }
+            } catch (e) { alert("Error: Pastikan aturan Firebase sesuai."); btn.disabled = false; }
         }
 
         // FUNGSI BARU: MANAGER KATEGORI (REALTIME)
@@ -391,7 +391,7 @@
 
                     const batch = db.batch();
                     snapshot.forEach(doc => {
-                        // Pastikan menyertakan PIN sesuai Rules Firebase
+                        // Memastikan pin di-pass untuk mematuhi rules firebase "request.resource.data.pin"
                         batch.update(doc.ref, { kategoriTema: "Reguler", pin: PIN_AKSES });
                     });
 
@@ -470,7 +470,7 @@
         async function updateStok(id, change) {
             const docRef = db.collection("menuToko").doc(id); const doc = await docRef.get();
             let stokBaru = (Number(doc.data().stok) || 0) + change;
-            if(stokBaru >= 0) await docRef.update({ stok: stokBaru, pin: PIN_AKSES });
+            if(stokBaru >= 0) await docRef.update({ stok: stokBaru, pin: PIN_AKSES }); // pin diikutkan lagi
         }
         async function hapusMenu(id) { if(confirm("Hapus menu ini?")) await db.collection("menuToko").doc(id).delete(); }
 
@@ -494,7 +494,11 @@
                 let waktuTeks = order.waktuOrder ? (order.waktuOrder.toDate ? order.waktuOrder.toDate().toLocaleString('id-ID', {day: 'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : "...") : "Baru";
                 let statusTeks = order.status || 'Baru Masuk';
 
-                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sedang diproses ya 😊\n\n*Rincian Pesanan:*\n${order.detailPesanan}\n\nTerima kasih! 🙏`;
+                // ----- MODIFIKASI PESAN WHATSAPP & TOTAL BELANJA -----
+                let formatTotal = order.totalHarga ? "Rp " + Number(order.totalHarga).toLocaleString('id-ID') : "Rp 0";
+                
+                let templatePesan = `Halo kak *${order.namaPelanggan}*, pesanan dari *Douceur De Yani* sudah kami terima dan sedang diproses ya 😊\n\n*📦 Rincian Pesanan:*\n${order.detailPesanan}\n\n*💰 Total Belanja:* ${formatTotal}\n\nTerima kasih banyak! 🙏`;
+                // ------------------------------------------------------
 
                 orderHtml += `
                     <div class="bg-white p-5 rounded-[2rem] card-shadow border border-stone-100 flex flex-col gap-3 relative animate-fade-in">
@@ -517,7 +521,8 @@
             listPesanan.innerHTML = orderHtml;
         });
 
-        async function updateStatusPesanan(id, statusBaru) { if(confirm(`Ubah ke ${statusBaru}?`)) await db.collection("pesanan").doc(id).update({ status: statusBaru }); }
+        // Pastikan update status pesanan juga mengirim pin jika secara ajaib Firebase Rules-nya menuntut demikian
+        async function updateStatusPesanan(id, statusBaru) { if(confirm(`Ubah ke ${statusBaru}?`)) await db.collection("pesanan").doc(id).update({ status: statusBaru, pin: PIN_AKSES }); }
         async function hapusPesanan(id) { if(confirm("Hapus pesanan ini?")) await db.collection("pesanan").doc(id).delete(); }
 
         // LAPORAN OMZET & TERLARIS
