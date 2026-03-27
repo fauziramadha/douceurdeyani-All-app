@@ -150,7 +150,7 @@
                 <button onclick="eksekusiLacak()" class="w-full bg-amber-800 text-white py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-md active:scale-95 transition-all">Cari Pesanan</button>
             </div>
             <div id="hasil-lacak" class="max-h-[30vh] overflow-y-auto scrollbar-hide space-y-3">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -261,11 +261,9 @@
         let kategoriSekarang = 'Semua';
         let itemAktif = null;
         let dataPembeliTemp = { nama: "", wa: "", metode: "", alamat: "" };
-        
-        // FITUR 2: Mengambil daftar ID favorit dari Local Storage perangkat
         let daftarFavorit = JSON.parse(localStorage.getItem('favorit_yani')) || [];
 
-        // MONITOR PENGATURAN TOKO (STATUS BUKA/TUTUP & PROMO)
+        // MONITOR PENGATURAN TOKO
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
             const data = doc.data();
             if (!data) return;
@@ -275,7 +273,6 @@
                 wadahSK.innerHTML = data.sk.split('\n').map(line => `<p>${line}</p>`).join('');
             }
 
-            // Jika ada field teksPromo di firebase nanti, banner akan otomatis berubah
             if(data.teksPromo) {
                 document.getElementById('promo-text').innerText = data.teksPromo;
             }
@@ -332,12 +329,11 @@
             else { alamat.classList.add('hidden'); info.classList.remove('hidden'); }
         }
 
-        // RENDER TOMBOL FILTER KATEGORI (Ditambah Filter Favorit)
+        // RENDER FILTER
         function renderFilterKategori() {
             const wadah = document.getElementById('container-filter');
             let html = `<button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>`;
             
-            // FITUR 2: Tombol Filter Favorit
             html += `<button onclick="filterKategori('Favorit', this)" class="btn-filter bg-white text-red-500 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-100 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-heart text-[8px] mr-1"></i> Favorit</button>`;
 
             const listKategoriSorted = Array.from(daftarKategoriTema).sort();
@@ -366,7 +362,6 @@
                 let badgePO = item.sistemPO === 'Pre-Order' ? `<div class="absolute top-4 left-4 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border border-purple-200 z-10">PRE-ORDER</div>` : '';
                 let labelBeliKilat = item.sistemPO === 'Pre-Order' ? 'PO Kilat' : 'Beli Kilat';
                 
-                // Cek status favorit
                 let isFavorit = daftarFavorit.includes(item.id);
 
                 const card = `
@@ -403,22 +398,20 @@
             });
         }
 
-        // FITUR 2: Logika klik tombol Favorit
         function toggleFavorit(id) {
             const index = daftarFavorit.indexOf(id);
             if (index > -1) {
-                daftarFavorit.splice(index, 1); // Hapus jika sudah ada
+                daftarFavorit.splice(index, 1); 
                 showToast("Dihapus dari Favorit", "fa-heart-broken");
             } else {
-                daftarFavorit.push(id); // Tambah jika belum ada
+                daftarFavorit.push(id); 
                 showToast("Disimpan ke Favorit ❤️", "fa-heart text-red-500");
                 confetti({ particleCount: 30, spread: 50, origin: { y: 0.9 }, colors: ['#ef4444'] });
             }
             localStorage.setItem('favorit_yani', JSON.stringify(daftarFavorit));
-            filterMenu(); // Segarkan tampilan (warna hati akan update)
+            filterMenu(); 
         }
 
-        // FITUR 3: Logika Share (Bagikan Produk)
         function bagikanProduk(namaProduk) {
             const pesanShare = `Cek menu enak ini dari Douceur De Yani: *${namaProduk}*!\nPesan sekarang yuk: `;
             const urlToko = window.location.href;
@@ -426,13 +419,11 @@
             if (navigator.share) {
                 navigator.share({ title: 'Douceur De Yani', text: pesanShare, url: urlToko }).catch(err => console.log('Batal share', err));
             } else {
-                // Alternatif jika HP tidak mendukung Web Share API (seperti di komputer)
                 navigator.clipboard.writeText(pesanShare + urlToko);
                 showToast("Link disalin! Silakan paste ke chat teman.", "fa-copy");
             }
         }
 
-        // FITUR 1: Logika Modal & Tarik Data Lacak Pesanan
         function toggleLacak() { 
             document.getElementById('modal-lacak').classList.toggle('hidden'); 
             document.getElementById('hasil-lacak').innerHTML = '';
@@ -447,12 +438,10 @@
             wadahHasil.innerHTML = '<p class="text-[10px] text-stone-400 text-center italic mt-4"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari riwayat pesanan...</p>';
 
             try {
-                // Tarik data berdasarkan nomor WA
                 const snapshot = await db.collection("pesanan").where("noWA", "==", inputWa).get();
                 let orders = [];
                 snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
 
-                // Urutkan yang terbaru di atas
                 orders.sort((a,b) => (b.waktuOrder?.seconds || 0) - (a.waktuOrder?.seconds || 0));
 
                 if(orders.length === 0) {
@@ -461,11 +450,10 @@
                 }
 
                 let htmlHasil = '';
-                // Hanya tampilkan 5 pesanan terakhir
                 orders.slice(0, 5).forEach((order, idx) => {
                     const tanggal = order.waktuOrder ? order.waktuOrder.toDate().toLocaleDateString('id-ID', {day: 'numeric', month:'short'}) : 'Baru';
                     const statusWarna = order.status === 'Selesai' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-100 text-amber-700 border-amber-200';
-                    const rincianPendek = order.detailPesanan.split('\n')[0].substring(3); // Ambil baris pertama menu saja untuk ringkasan
+                    const rincianPendek = order.detailPesanan.split('\n')[0].substring(3); 
                     
                     htmlHasil += `
                         <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 shadow-sm animate-fade-in" style="animation-delay: ${idx * 0.1}s">
@@ -569,7 +557,47 @@
             btn.disabled = !isChecked; btn.className = isChecked ? "bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95" : "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none";
         }
 
-        // DATABASE PROCESS 
+
+        // ========================================================
+        // FITUR BARU: FUNGSI PENGIRIM PESAN KE TELEGRAM OWNER
+        // ========================================================
+        async function kirimNotifTelegram(namaPelanggan, noWA, detailPesanan, totalHarga) {
+            // Token Bot dan Chat ID Owner
+            const BOT_TOKEN = "8610624303:AAH_Vsf3fzYWx4_iN2RBlV-qGeaCNsjTiuw";
+            const CHAT_ID = "1444132958";
+
+            const teksPesan = `
+🚨 *PESANAN BARU MASUK!* 🚨
+━━━━━━━━━━━━━━━━━━━━
+👤 *Nama:* ${namaPelanggan}
+📞 *WA:* ${noWA}
+💰 *Total Belanja:* Rp ${totalHarga.toLocaleString('id-ID')}
+━━━━━━━━━━━━━━━━━━━━
+📦 *Rincian Pesanan:*
+${detailPesanan}
+━━━━━━━━━━━━━━━━━━━━
+Cek Web Owner untuk update status pesanan!`;
+
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+            try {
+                await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: teksPesan,
+                        parse_mode: "Markdown"
+                    })
+                });
+                console.log("Notifikasi Telegram berhasil terkirim!");
+            } catch (error) {
+                console.error("Gagal mengirim notif Telegram:", error);
+            }
+        }
+
+
+        // DATABASE PROCESS + PEMANGGILAN FUNGSI TELEGRAM
         async function prosesKeDatabase() {
             const btn = document.getElementById('btn-lanjut-wa');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...'; btn.disabled = true;
@@ -595,8 +623,13 @@
                     waktuOrder: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
+                // 1. Simpan ke Firebase Database
                 await db.collection("pesanan").add(dataPesanan);
                 
+                // 2. Kirim Notifikasi ke Telegram Owner (INI FITUR BARUNYA!)
+                await kirimNotifTelegram(dataPembeliTemp.nama, dataPembeliTemp.wa, detailTeks, totalDuitAngka);
+                
+                // 3. Potong Stok Menu
                 for (const item of itemUntukDikurangi) {
                     if (item.id) {
                         await db.collection("menuToko").doc(item.id).update({ 
@@ -629,7 +662,6 @@
                 if(kategoriSekarang === 'Semua') {
                     cocokKategori = true;
                 } else if(kategoriSekarang === 'Favorit') {
-                    // FITUR 2: Tampilkan hanya jika ID produk ada di daftar favorit
                     cocokKategori = daftarFavorit.includes(item.id);
                 } else {
                     const katItem = item.kategoriTema ? item.kategoriTema.trim() : 'Reguler';
@@ -644,12 +676,10 @@
         function filterKategori(kat, element) {
             kategoriSekarang = kat;
             
-            // Reset semua tombol menjadi gaya biasa (Putih border biasa)
             document.querySelectorAll('.btn-filter').forEach(btn => { 
                 btn.className = "btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap";
             });
             
-            // Berikan gaya aktif sesuai kategori (Hitam untuk 'Semua', Merah untuk 'Favorit', Kuning untuk lainnya)
             if (kat === 'Semua') {
                 element.className = "btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap";
             } else if (kat === 'Favorit') {
