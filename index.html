@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Douceur De Yani | Menu</title>
+    <title>Douceur De Yani | Premium Menu</title>
 
-    <meta name="theme-color" content="#FDFBF7">
-    <meta name="apple-mobile-web-app-status-bar-style" content="#FDFBF7">
-    <meta name="msapplication-navbutton-color" content="#FDFBF7">
+    <meta name="theme-color" content="#008080">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="msapplication-navbutton-color" content="#008080">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Douceur De Yani | Menu Homemade Terlezat">
-    <meta property="og:description" content="Nikmati kelembutan roti dan kue kering fresh dari dapur Douceur De Yani. Pesan mudah!">
+    <meta property="og:title" content="Douceur De Yani | Menu Homemade Premium">
+    <meta property="og:description" content="Nikmati kelembutan roti dan kue kering fresh dari dapur Douceur De Yani. Artisan Bakery Palembang.">
     <meta property="og:image" content="https://i.ibb.co.com/BVD8vCfn/03-D9-FB2-B-A141-42-F0-9-F24-4095-B13-D44-EE.png">
     <meta property="og:url" content="https://douceurdeyani.web.app">
     <meta property="og:site_name" content="Douceur De Yani">
@@ -24,230 +24,265 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,600;1,800&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-serif-luxury { font-family: 'Playfair Display', serif; }
+        
+        /* HILANGKAN PANAH BAWAAN DI KOLOM ANGKA */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        
         input[type="text"], input[type="tel"], select, textarea { font-size: 16px !important; }
         
+        /* BACKGROUND TOSCA + UKIRAN ARTISAN MEWAH */
+        .bg-luxury-pattern {
+            background-color: #008080;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        /* WARNA EMAS PREMIUM */
+        .text-gold { color: #D4AF37; }
+        .bg-gold { background-color: #D4AF37; }
+        .border-gold { border-color: #D4AF37; }
+        .shadow-gold { box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+
         @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        @keyframes pulse-green { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-        @keyframes skeleton-loading { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        .animate-slide-up { animation: slide-up 0.3s ease-out; }
-        .animate-fade-in { animation: fade-in-up 0.5s ease-out forwards; }
+        .animate-fade-in { animation: fade-in-up 0.6s ease-out forwards; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .sold-out-img { filter: grayscale(100%) blur(1px); opacity: 0.6; }
-        .status-dot { width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%; animation: pulse-green 2s infinite; }
-        .glass-morphism { background: rgba(255, 255, 255, 0.95) !important; backdrop-filter: blur(15px) !important; }
         
-        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
-        
+        /* KARTU KUE 3D ELEGANT */
+        .luxury-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .luxury-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25); border-color: #D4AF37; }
+
         .badge-diskon { animation: pulse-red 1.5s infinite; background: #ef4444; color: white; padding: 4px 10px; border-radius: 8px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
-        .marquee-container { overflow: hidden; white-space: nowrap; background: #FFF9EB; border-bottom: 1px solid #FEF3C7; }
-        .marquee-text { display: inline-block; animation: marquee 20s linear infinite; font-size: 10px; font-weight: bold; color: #92400e; padding: 8px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .marquee-container { overflow: hidden; white-space: nowrap; background: #005959; border-bottom: 1px solid #004d4d; }
+        .marquee-text { display: inline-block; animation: marquee 25s linear infinite; font-size: 11px; color: #D4AF37; padding: 10px 0; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
 
         #toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 350px; }
-        .toast { background: #1c1917; color: white; padding: 12px 20px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; animation: slide-up 0.3s ease-out; }
+        .toast { background: #004d4d; color: #D4AF37; border: 1px solid #D4AF37; padding: 12px 20px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px; animation: slide-up 0.3s ease-out; }
     </style>
 </head>
-<body id="main-body" class="bg-[#FDFBF7] pb-32 font-sans overflow-x-hidden">
+<body id="main-body" class="bg-luxury-pattern pb-32 overflow-x-hidden min-h-screen">
 
     <div id="toast-container"></div>
 
     <div id="app-container">
-        <div id="promo-banner" class="bg-amber-800 text-white text-[9px] font-black uppercase tracking-[0.2em] p-2.5 text-center relative z-50">
-            <span id="promo-text">✨ Spesial Hari Ini: Menu Fresh Bake Siap Dipesan! ✨</span>
-            <button onclick="document.getElementById('promo-banner').style.display='none'" class="absolute right-4 top-1/2 -translate-y-1/2 text-amber-200 hover:text-white"><i class="fas fa-times"></i></button>
+        <div id="promo-banner" class="bg-gold text-[#004d4d] text-[10px] font-black uppercase tracking-[0.2em] p-3 text-center relative z-50 shadow-md">
+            <span id="promo-text">✨ Spesial Hari Ini: Menu Premium Fresh Bake Siap Dipesan! ✨</span>
+            <button onclick="document.getElementById('promo-banner').style.display='none'" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#004d4d] hover:text-white"><i class="fas fa-times"></i></button>
         </div>
 
-        <nav class="p-5 bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-[100] flex items-center justify-between border-b border-stone-100">
+        <nav class="p-5 bg-[#008080]/90 backdrop-blur-md shadow-lg sticky top-0 z-[100] flex items-center justify-between border-b border-[#006666]">
             <div class="flex items-center gap-3">
                 <div class="relative">
-                    <img src="https://i.ibb.co.com/BVD8vCfn/03-D9-FB2-B-A141-42-F0-9-F24-4095-B13-D44-EE.png" alt="Logo" class="w-10 h-10 rounded-full object-cover border border-stone-100 shadow-sm">
-                    <div class="absolute -bottom-0.5 -right-0.5 status-dot border-2 border-white"></div>
+                    <img src="https://i.ibb.co.com/BVD8vCfn/03-D9-FB2-B-A141-42-F0-9-F24-4095-B13-D44-EE.png" alt="Logo" class="w-12 h-12 rounded-full object-cover border-2 border-gold shadow-gold">
                 </div>
                 <div class="text-left">
-                    <h1 class="text-xs font-black tracking-[0.2em] text-stone-800 uppercase leading-none">Douceur De Yani</h1>
-                    <p class="text-[7px] tracking-[0.2em] text-amber-700 mt-1 uppercase font-bold italic">Homemade Choice</p>
+                    <h1 class="text-sm font-serif-luxury font-black tracking-widest text-white uppercase leading-none">Douceur De Yani</h1>
+                    <p class="text-[8px] tracking-[0.3em] text-gold mt-1 uppercase font-bold">Premium Artisan Bakery</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-2">
-                <button onclick="toggleLacak()" class="relative p-2.5 bg-stone-50 rounded-full text-stone-700 active:scale-90 transition-transform border border-stone-100">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleLacak()" class="relative p-2.5 bg-[#006666] rounded-full text-white active:scale-90 transition-transform border border-[#004d4d] hover:bg-gold hover:text-[#004d4d]">
                     <i class="fas fa-receipt text-lg"></i>
                 </button>
-
-                <button onclick="toggleCart()" class="relative p-2.5 bg-stone-50 rounded-full text-stone-700 active:scale-90 transition-transform border border-stone-100">
-                    <i class="fas fa-shopping-basket text-lg"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                <button onclick="toggleCart()" class="relative p-2.5 bg-[#006666] rounded-full text-white active:scale-90 transition-transform border border-[#004d4d] hover:bg-gold hover:text-[#004d4d]">
+                    <i class="fas fa-shopping-bag text-lg"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden border border-white">0</span>
                 </button>
             </div>
         </nav>
 
         <div class="marquee-container">
-            <div class="marquee-text">✨ SELAMAT DATANG DI TOKO Douceur De Yani • FIX ORDER WAJIB DP 50% • Batas minimal pengambilan akan di infokan langsung oleh admin setelah checkout jika pesanan berlabelkan preorder • Menjaga Kualitas Homemade & Fresh Bake di setiap pesanan Anda ✨</div>
+            <div class="marquee-text">✨ SELAMAT DATANG DI TOKO Douceur De Yani • FIX ORDER WAJIB DP 50% • Batas minimal pengambilan diinfokan admin jika pesanan Pre-Order • Menjaga Kualitas Premium di setiap pesanan Anda ✨</div>
         </div>
 
         <div id="konten-toko">
-            <div class="px-6 mt-8 max-w-md mx-auto space-y-4">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-stone-300 text-sm"></i>
-                    <input type="text" id="input-cari" onkeyup="filterMenu()" placeholder="Cari kue favoritmu..." 
-                        class="w-full pl-12 pr-4 py-4 bg-white border border-stone-100 rounded-[1.5rem] shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-amber-100 transition-all">
-                </div>
-                <div id="container-filter" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-start">
-                    <button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>
-                </div>
+            <div class="py-16 px-6 text-center max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-serif-luxury text-white leading-tight mb-4 drop-shadow-md">
+                    <span class="italic font-light">Elegance in Every</span> <br><span class="font-black text-gold uppercase tracking-widest text-3xl md:text-5xl">Bite</span>
+                </h2>
+                <div class="w-20 h-[2px] bg-gold mx-auto mt-6 rounded-full shadow-gold"></div>
+                <p class="text-white/80 mt-6 text-sm md:text-base tracking-widest uppercase font-light">Pilih & Nikmati Koleksi Terlezat Kami</p>
             </div>
 
-            <div class="py-12 px-8 text-center">
-                <h2 class="text-3xl italic text-stone-700 font-serif leading-tight">Kelembutan & kualitas adalah prioritas <br><span class="not-italic font-bold text-stone-800">Untuk Anda</span></h2>
-                <div class="w-12 h-[2px] bg-amber-700 mx-auto mt-4 rounded-full"></div>
-            </div>
-
-            <div id="daftar-roti" class="px-6 space-y-8 max-w-md mx-auto min-h-[400px]">
-                <div class="skeleton-wrapper space-y-8">
-                    <div class="bg-white rounded-[2rem] p-6 space-y-4 border border-stone-50">
-                        <div class="skeleton h-64 w-full rounded-2xl"></div>
-                        <div class="skeleton h-6 w-3/4 mx-auto rounded"></div>
-                    </div>
+            <div class="px-6 max-w-7xl mx-auto space-y-6">
+                <div class="relative max-w-md mx-auto">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-teal-700 text-sm"></i>
+                    <input type="text" id="input-cari" onkeyup="filterMenu()" placeholder="Cari sajian favorit Anda..." 
+                        class="w-full pl-12 pr-4 py-4 bg-white/95 border-2 border-transparent rounded-full shadow-lg text-sm focus:outline-none focus:border-gold transition-all text-teal-900 font-bold placeholder-teal-700/50">
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <p class="text-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-3"><i class="fas fa-bars text-[8px] mr-1"></i> Pilih Kategori Menu</p>
+                    <div id="container-filter" class="flex flex-wrap gap-3 justify-center">
+                        </div>
                 </div>
             </div>
 
-            <footer class="mt-20 py-12 px-8 bg-stone-100 text-stone-500 border-t border-stone-200 text-center">
-                <div class="max-w-md mx-auto space-y-6">
-                    <div class="text-stone-800 font-black tracking-tighter text-xl italic uppercase">DOUCEUR DE YANI</div>
-                    <div class="flex flex-col gap-3 text-[11px] font-medium uppercase tracking-widest">
-                        <div class="flex items-center justify-center gap-2">
-                            <i class="fas fa-envelope text-amber-800"></i>
+            <div id="daftar-roti" class="px-6 py-12 max-w-7xl mx-auto min-h-[400px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div class="luxury-card p-6 space-y-4">
+                    <div class="bg-gray-200 animate-pulse h-64 w-full rounded-2xl"></div>
+                    <div class="bg-gray-200 animate-pulse h-6 w-3/4 mx-auto rounded"></div>
+                </div>
+            </div>
+
+            <footer class="mt-20 py-16 px-8 bg-[#004d4d] text-white border-t border-[#006666] text-center">
+                <div class="max-w-md mx-auto space-y-8">
+                    <div class="font-serif-luxury font-black tracking-widest text-2xl uppercase text-gold">DOUCEUR DE YANI</div>
+                    <div class="w-12 h-[1px] bg-gold/50 mx-auto"></div>
+                    <div class="flex flex-col gap-4 text-xs font-medium uppercase tracking-widest text-white/80">
+                        <div class="flex items-center justify-center gap-3 hover:text-gold transition-colors">
+                            <i class="fas fa-envelope text-gold"></i>
                             <span>douceurdeyanis@gmail.com</span>
                         </div>
-                        <div class="flex items-center justify-center gap-2">
-                            <i class="fab fa-instagram text-amber-800"></i>
+                        <div class="flex items-center justify-center gap-3 hover:text-gold transition-colors">
+                            <i class="fab fa-instagram text-gold"></i>
                             <a href="https://instagram.com/douceurdeyani" target="_blank">@douceurdeyani</a>
                         </div>
-                        <div class="flex items-center justify-center gap-2">
-                            <i class="fas fa-map-marker-alt text-amber-800"></i>
+                        <div class="flex items-center justify-center gap-3 hover:text-gold transition-colors">
+                            <i class="fas fa-map-marker-alt text-gold"></i>
                             <span>Palembang, Indonesia</span>
                         </div>
                     </div>
-                    <p class="text-[9px] pt-4 border-t border-stone-200 opacity-50 uppercase font-bold">&copy; 2024 Douceur De Yani - Handmade with love</p>
+                    <p class="text-[9px] pt-8 opacity-40 uppercase font-bold tracking-[0.3em]">&copy; 2024 Douceur De Yani - Premium Quality</p>
                 </div>
             </footer>
         </div>
     </div>
 
-    <div id="modal-lacak" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[2000] px-6">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-slide-up">
+    <div id="modal-lacak" class="fixed inset-0 bg-[#004d4d]/90 backdrop-blur-sm hidden flex items-center justify-center z-[2000] px-6">
+        <div class="luxury-card w-full max-w-sm p-8 animate-slide-up">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-black text-stone-800 uppercase tracking-widest text-sm italic">Lacak Pesanan</h3>
-                <button onclick="toggleLacak()" class="text-stone-400 p-2"><i class="fas fa-times text-lg"></i></button>
+                <h3 class="font-serif-luxury font-black text-[#004d4d] uppercase tracking-widest text-lg">Lacak Pesanan</h3>
+                <button onclick="toggleLacak()" class="text-[#008080] p-2 hover:text-red-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div class="space-y-3 mb-6">
-                <input type="tel" id="input-lacak-wa" placeholder="Nomor WA saat pesan (0812...)" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none focus:ring-2 focus:ring-amber-100 font-bold text-stone-700">
-                <button onclick="eksekusiLacak()" class="w-full bg-amber-800 text-white py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-md active:scale-95 transition-all">Cari Pesanan</button>
+            <div class="space-y-4 mb-6">
+                <input type="tel" id="input-lacak-wa" placeholder="Nomor WA saat pesan (0812...)" class="w-full p-4 bg-gray-50 rounded-xl text-sm border-2 border-transparent outline-none focus:border-gold font-bold text-[#004d4d]">
+                <button onclick="eksekusiLacak()" class="w-full bg-[#008080] hover:bg-[#004d4d] text-gold border border-gold py-4 rounded-xl text-xs font-bold uppercase tracking-widest shadow-md active:scale-95 transition-all">Cari Riwayat</button>
             </div>
-            <div id="hasil-lacak" class="max-h-[30vh] overflow-y-auto scrollbar-hide space-y-3">
-            </div>
+            <div id="hasil-lacak" class="max-h-[30vh] overflow-y-auto scrollbar-hide space-y-3"></div>
         </div>
     </div>
 
-    <div id="layer-tutup" class="fixed inset-0 bg-[#FDFBF7] z-[999] hidden flex flex-col items-center justify-center p-10 text-center">
-        <div class="text-4xl font-black mb-6 tracking-tighter italic text-stone-800 uppercase">DOUCEUR DE YANI</div>
-        <h1 id="judul-tutup" class="text-2xl font-bold text-stone-800 uppercase tracking-[0.2em]">Toko Sedang Tutup</h1>
-        <p id="pesan-tutup" class="text-stone-500 mt-4 text-sm italic leading-relaxed"></p>
-        <a href="https://instagram.com/douceurdeyani" class="mt-10 px-8 py-3 bg-stone-800 text-white rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">Ikuti Instagram</a>
+    <div id="layer-tutup" class="fixed inset-0 bg-[#008080] z-[999] hidden flex flex-col items-center justify-center p-10 text-center">
+        <div class="text-5xl font-serif-luxury font-black mb-6 text-gold drop-shadow-lg">Douceur De Yani</div>
+        <h1 id="judul-tutup" class="text-xl font-bold text-white uppercase tracking-[0.2em] mb-4">Toko Sedang Tutup</h1>
+        <p id="pesan-tutup" class="text-white/80 text-sm italic leading-relaxed max-w-sm"></p>
+        <a href="https://instagram.com/douceurdeyani" class="mt-10 px-8 py-4 bg-gold text-[#004d4d] rounded-full text-xs font-black uppercase tracking-widest shadow-gold hover:scale-105 transition-transform">Kunjungi Instagram Kami</a>
     </div>
 
-    <button id="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-24 right-6 bg-white/90 backdrop-blur-md border border-stone-200 p-4 rounded-full shadow-lg text-amber-800 opacity-0 pointer-events-none z-[90] active:scale-90 transition-all"><i class="fas fa-chevron-up"></i></button>
-
-    <div id="modal-pilihan" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[2000] px-6">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-slide-up">
-            <h3 id="judul-pilihan" class="font-black text-stone-800 uppercase tracking-widest text-center mb-6 text-sm italic">Atur Pesanan</h3>
+    <div id="modal-pilihan" class="fixed inset-0 bg-[#004d4d]/90 backdrop-blur-sm hidden flex items-center justify-center z-[2000] px-6">
+        <div class="luxury-card w-full max-w-sm p-8 animate-slide-up">
+            <h3 id="judul-pilihan" class="font-serif-luxury font-black text-[#004d4d] text-xl text-center mb-6">Pilih Varian</h3>
             
-            <div id="area-berat" class="hidden mb-4">
-                <label class="text-[10px] font-bold text-stone-400 uppercase ml-2 mb-2 block tracking-widest">Pilih Berat</label>
-                <select id="pilih-berat" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none focus:ring-2 focus:ring-amber-100 font-bold text-stone-700"></select>
+            <div id="area-berat" class="hidden mb-6">
+                <label class="text-[10px] font-bold text-gray-500 uppercase text-center mb-2 block tracking-widest">Pilih Ukuran/Berat</label>
+                <select id="pilih-berat" class="w-full p-4 bg-gray-50 rounded-xl text-sm border-2 border-transparent outline-none focus:border-gold font-bold text-[#004d4d] text-center"></select>
             </div>
 
-            <div class="mb-6">
-                <label class="text-[10px] font-bold text-stone-400 uppercase ml-2 mb-2 block tracking-widest">Jumlah (Pcs/Box)</label>
-                <input type="number" id="input-qty" value="1" min="1" class="w-full p-4 bg-stone-50 rounded-2xl text-sm border-none outline-none focus:ring-2 focus:ring-amber-100 font-bold text-stone-800">
-                <p id="info-stok-sisa" class="text-[9px] text-amber-700 font-bold mt-2 ml-2 uppercase tracking-tighter"></p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="tutupModalPilihan()" class="py-4 rounded-full text-[9px] font-bold uppercase text-stone-400 border border-stone-100">Batal</button>
-                <button id="btn-konfirmasi-pilihan" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase shadow-md active:scale-95 transition-all">Tambahkan</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-cart" class="fixed inset-0 bg-black/60 hidden flex items-end justify-center z-[1000] px-4 pb-4">
-        <div class="glass-morphism w-full max-w-md rounded-[2.5rem] p-6 shadow-2xl animate-slide-up relative mb-2 max-h-[90vh] overflow-y-auto scrollbar-hide">
-            <div class="flex justify-between items-center mb-4 border-b border-stone-200/50 pb-4">
-                <div class="flex flex-col">
-                    <h3 class="font-bold text-stone-800 uppercase tracking-widest text-sm">Pesanan Anda</h3>
-                    <button onclick="resetKeranjang()" class="text-[9px] text-red-500 uppercase font-bold text-left mt-1">Hapus Semua</button>
-                </div>
-                <button onclick="toggleCart()" class="text-stone-400 p-2"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            
-            <div id="cart-items" class="space-y-3 mb-4 max-h-[20vh] overflow-y-auto pr-2 scrollbar-hide"></div>
-            
-            <div class="space-y-3 mb-4 border-t border-stone-200/50 pt-4">
-                <label class="text-[10px] font-bold text-stone-400 uppercase ml-1 tracking-widest block">Data Pemesan</label>
-                <input type="text" id="nama-pembeli" placeholder="Nama Lengkap Anda..." class="w-full p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
-                <input type="tel" id="wa-pembeli" placeholder="Nomor WhatsApp (Contoh: 0812...)" class="w-full p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none transition-all shadow-sm">
+            <div class="mb-8">
+                <label class="text-[10px] font-bold text-gray-500 uppercase text-center mb-3 block tracking-widest">Jumlah Pembelian</label>
                 
-                <div class="bg-stone-50 p-3 rounded-xl border border-stone-100 mt-2">
-                    <label class="text-[10px] font-bold text-stone-400 uppercase mb-2 block tracking-widest">Metode Pengambilan</label>
-                    <select id="metode-kirim" onchange="toggleAlamat()" class="w-full p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none font-bold text-stone-700">
+                <div class="flex items-center justify-center gap-4">
+                    <button onclick="ubahQty(-1)" class="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 text-[#008080] font-black text-2xl flex items-center justify-center transition-colors border border-gray-200 shadow-sm active:scale-90">-</button>
+                    
+                    <input type="number" id="input-qty" value="1" min="1" class="w-20 p-3 bg-gray-50 rounded-xl text-center text-2xl border-2 border-transparent outline-none focus:border-gold font-black text-[#004d4d]">
+                    
+                    <button onclick="ubahQty(1)" class="w-12 h-12 rounded-full bg-[#008080] hover:bg-[#004d4d] text-gold font-black text-2xl flex items-center justify-center transition-colors shadow-md border border-[#006666] active:scale-90">+</button>
+                </div>
+
+                <p id="info-stok-sisa" class="text-[10px] text-teal-700 font-bold mt-4 text-center uppercase tracking-widest bg-teal-50 py-2 rounded-lg border border-teal-100"></p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="tutupModalPilihan()" class="py-4 rounded-xl text-xs font-bold uppercase text-gray-400 border border-gray-200 hover:bg-gray-50">Batal</button>
+                <button id="btn-konfirmasi-pilihan" class="bg-gold text-[#004d4d] py-4 rounded-xl text-xs font-black uppercase shadow-md active:scale-95 hover:bg-yellow-400 transition-colors">Tambah</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cart" class="fixed inset-0 bg-[#004d4d]/90 backdrop-blur-sm hidden flex items-end md:items-center justify-center z-[1000] px-4 pb-4 md:pb-0">
+        <div class="luxury-card w-full max-w-lg p-6 animate-slide-up relative max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-4">
+                <div class="flex flex-col">
+                    <h3 class="font-serif-luxury font-black text-[#004d4d] text-xl">Pesanan Anda</h3>
+                    <button onclick="resetKeranjang()" class="text-[10px] text-red-500 uppercase font-bold text-left mt-1 tracking-widest">Hapus Semua</button>
+                </div>
+                <button onclick="toggleCart()" class="text-[#008080] p-2 hover:text-red-500 transition-colors"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            
+            <div id="cart-items" class="space-y-3 mb-4 max-h-[25vh] overflow-y-auto pr-2 scrollbar-hide"></div>
+            
+            <div class="space-y-4 mb-4 border-t border-gray-200 pt-4">
+                <label class="text-[10px] font-bold text-[#008080] uppercase tracking-widest block">Data Pemesan</label>
+                <input type="text" id="nama-pembeli" placeholder="Nama Lengkap Anda..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-gold outline-none transition-colors text-[#004d4d] font-bold">
+                <input type="tel" id="wa-pembeli" placeholder="Nomor WhatsApp (Contoh: 0812...)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-gold outline-none transition-colors text-[#004d4d] font-bold">
+                
+                <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
+                    <label class="text-[10px] font-bold text-[#008080] uppercase mb-2 block tracking-widest">Metode Pengiriman</label>
+                    <select id="metode-kirim" onchange="toggleAlamat()" class="w-full p-3 bg-white border border-teal-200 rounded-xl text-sm focus:border-gold outline-none font-bold text-[#004d4d]">
                         <option value="Pick Up">Ambil Sendiri (Pick Up)</option>
                         <option value="Kurir">Kirim via Kurir</option>
                     </select>
                     
-                    <textarea id="alamat-pembeli" placeholder="Tulis alamat lengkap pengiriman..." class="w-full mt-3 p-3 bg-white border border-stone-100 rounded-xl text-sm focus:ring-2 focus:ring-amber-100 outline-none hidden transition-all shadow-sm" rows="2"></textarea>
-                    <p id="info-pickup" class="text-[9px] text-amber-700 font-bold mt-2 italic">* Batas minimal pengambilan akan di infokan langsung oleh admin setelah checkout jika pesanan berlabelkan preorder.</p>
+                    <textarea id="alamat-pembeli" placeholder="Tulis alamat lengkap pengiriman..." class="w-full mt-3 p-3 bg-white border border-teal-200 rounded-xl text-sm focus:border-gold outline-none hidden transition-all" rows="2"></textarea>
+                    <p id="info-pickup" class="text-[10px] text-teal-700 mt-2 italic">* Info batas minimal pengambilan (PO) akan diinfokan Admin via WhatsApp.</p>
                 </div>
             </div>
 
-            <div class="border-t border-stone-200/50 pt-4 mb-2 flex justify-between items-center px-2">
-                <span class="text-xs font-bold text-stone-500 uppercase">Total Belanja</span>
-                <span id="total-harga-keranjang" class="text-lg font-black text-stone-800">Rp 0</span>
+            <div class="border-t border-gray-200 pt-4 mb-3 flex justify-between items-center px-2">
+                <span class="text-sm font-bold text-gray-500 uppercase tracking-widest">Total Belanja</span>
+                <span id="total-harga-keranjang" class="text-xl font-black text-[#004d4d]">Rp 0</span>
             </div>
             
-            <div class="mb-6 flex justify-between items-center px-3 bg-amber-50 p-2.5 rounded-xl border border-amber-100 shadow-sm">
-                <span class="text-[9px] font-black text-amber-800 uppercase tracking-wider">Minimal DP (50%)<br><span class="text-[7px] text-amber-600 font-medium">*Fix Order Wajib DP</span></span>
-                <span id="dp-keranjang" class="text-sm font-black text-amber-900">Rp 0</span>
+            <div class="mb-6 flex justify-between items-center px-4 bg-gold/10 p-3 rounded-xl border border-gold">
+                <span class="text-[10px] font-black text-amber-700 uppercase tracking-wider">Minimal DP (50%)<br><span class="text-[8px] text-amber-600 font-medium">*Wajib untuk Fix Order</span></span>
+                <span id="dp-keranjang" class="text-lg font-black text-amber-700">Rp 0</span>
             </div>
 
-            <button onclick="bukaSK()" class="w-full bg-stone-800 text-white py-5 rounded-2xl text-[11px] font-bold tracking-widest uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+            <button onclick="bukaSK()" class="w-full bg-[#008080] hover:bg-[#004d4d] text-gold border border-gold py-5 rounded-2xl text-xs font-black tracking-widest uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
                 LANJUT PESAN <i class="fas fa-arrow-right"></i>
             </button>
         </div>
     </div>
 
-    <div id="modal-sk" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[1100] px-6">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-slide-up">
-            <div class="text-center mb-6 border-b pb-4">
-                <h3 class="font-black text-stone-800 uppercase tracking-widest text-sm italic">Konfirmasi S&K</h3>
+    <div id="modal-sk" class="fixed inset-0 bg-[#004d4d]/90 backdrop-blur-sm hidden flex items-center justify-center z-[2100] px-6">
+        <div class="luxury-card w-full max-w-sm p-8 animate-slide-up">
+            <div class="text-center mb-6 border-b border-gray-100 pb-4">
+                <h3 class="font-serif-luxury font-black text-[#004d4d] text-lg uppercase tracking-widest">Konfirmasi S&K</h3>
             </div>
-            <div id="teks-sk-pelanggan" class="text-[11px] text-stone-600 space-y-3 mb-8 leading-relaxed max-h-[30vh] overflow-y-auto scrollbar-hide">
+            <div id="teks-sk-pelanggan" class="text-xs text-gray-600 space-y-3 mb-8 leading-relaxed max-h-[30vh] overflow-y-auto scrollbar-hide">
                 Memuat aturan toko...
             </div>
-            <label class="flex items-center gap-3 mb-8 cursor-pointer group">
-                <input type="checkbox" id="check-setuju" onchange="cekSetuju()" class="w-5 h-5 rounded border-stone-300 text-amber-800 focus:ring-amber-500 transition-all">
-                <span class="text-[10px] font-bold text-stone-500 uppercase tracking-wider group-hover:text-stone-800 transition-colors">Saya Setuju & Paham</span>
+            <label class="flex items-center gap-3 mb-8 cursor-pointer group p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <input type="checkbox" id="check-setuju" onchange="cekSetuju()" class="w-5 h-5 rounded border-gray-300 text-[#008080] focus:ring-[#008080] transition-all">
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest group-hover:text-[#004d4d] transition-colors">Saya Setuju & Paham</span>
             </label>
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="tutupSK()" class="py-4 rounded-full text-[9px] font-bold uppercase text-stone-400 border border-stone-100">Batal</button>
-                <button id="btn-lanjut-wa" onclick="prosesKeDatabase()" disabled class="bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none transition-all shadow-md">Kirim Pesanan</button>
+                <button onclick="tutupSK()" class="py-4 rounded-xl text-[10px] font-bold uppercase text-gray-400 border border-gray-200 hover:bg-gray-50">Batal</button>
+                <button id="btn-lanjut-wa" onclick="prosesKeDatabase()" disabled class="bg-gray-300 text-white py-4 rounded-xl text-[10px] font-black uppercase opacity-50 pointer-events-none transition-all shadow-md">Kirim Pesanan</button>
             </div>
         </div>
     </div>
+
+    <button id="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-24 right-6 bg-[#008080]/90 backdrop-blur-md border border-gold p-4 rounded-full shadow-lg text-gold opacity-0 pointer-events-none z-[90] active:scale-90 transition-all"><i class="fas fa-chevron-up"></i></button>
 
     <script>
         // Konfigurasi Firebase
@@ -262,6 +297,23 @@
         let itemAktif = null;
         let dataPembeliTemp = { nama: "", wa: "", metode: "", alamat: "" };
         let daftarFavorit = JSON.parse(localStorage.getItem('favorit_yani')) || [];
+
+        // FUNGSI PLUS MINUS JUMLAH KUE DENGAN VALIDASI STOK
+        function ubahQty(angka) {
+            const inputField = document.getElementById('input-qty');
+            let nilaiSekarang = parseInt(inputField.value) || 1;
+            nilaiSekarang += angka;
+            
+            if (nilaiSekarang < 1) nilaiSekarang = 1;
+            
+            // Validasi jika melebih sisa stok
+            if (itemAktif && nilaiSekarang > itemAktif.stok) {
+                nilaiSekarang = itemAktif.stok;
+                showToast(`Stok maksimal hanya ${itemAktif.stok} pcs!`, "fa-info-circle");
+            }
+            
+            inputField.value = nilaiSekarang;
+        }
 
         // MONITOR PENGATURAN TOKO
         db.collection("pengaturan").doc("toko").onSnapshot((doc) => {
@@ -329,69 +381,86 @@
             else { alamat.classList.add('hidden'); info.classList.remove('hidden'); }
         }
 
-        // RENDER FILTER
+        // RENDER FILTER KATEGORI MEWAH
         function renderFilterKategori() {
             const wadah = document.getElementById('container-filter');
-            let html = `<button onclick="filterKategori('Semua', this)" class="btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap">Semua</button>`;
+            let html = `<button onclick="filterKategori('Semua', this)" class="btn-filter bg-gold text-[#004d4d] border border-gold px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-gold transition-all flex items-center gap-2"><i class="fas fa-th-large"></i> Semua Menu</button>`;
             
-            html += `<button onclick="filterKategori('Favorit', this)" class="btn-filter bg-white text-red-500 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-100 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-heart text-[8px] mr-1"></i> Favorit</button>`;
+            html += `<button onclick="filterKategori('Favorit', this)" class="btn-filter bg-white/10 text-white border border-white/20 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"><i class="fas fa-heart text-red-400"></i> Favoritku</button>`;
 
             const listKategoriSorted = Array.from(daftarKategoriTema).sort();
             listKategoriSorted.forEach(kat => {
-                html += `<button onclick="filterKategori('${kat}', this)" class="btn-filter bg-amber-50 text-amber-800 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-200 shadow-sm transition-all whitespace-nowrap"><i class="fas fa-star text-[8px] mr-1"></i> ${kat}</button>`;
+                html += `<button onclick="filterKategori('${kat}', this)" class="btn-filter bg-white/10 text-white border border-white/20 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"><i class="fas fa-star text-gold"></i> ${kat}</button>`;
             });
             wadah.innerHTML = html;
+        }
+
+        function filterKategori(kat, element) {
+            kategoriSekarang = kat;
+            
+            document.querySelectorAll('.btn-filter').forEach(btn => { 
+                btn.className = "btn-filter bg-white/10 text-white border border-white/20 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2";
+            });
+            
+            if (kat === 'Semua') {
+                element.className = "btn-filter bg-gold text-[#004d4d] border border-gold px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-gold transition-all flex items-center gap-2";
+            } else if (kat === 'Favorit') {
+                element.className = "btn-filter bg-red-500 text-white border border-red-500 px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-md transition-all flex items-center gap-2";
+            } else {
+                element.className = "btn-filter bg-gold text-[#004d4d] border border-gold px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-gold transition-all flex items-center gap-2";
+            }
+            
+            filterMenu();
         }
 
         function tampilkanMenu(data) {
             const wadah = document.getElementById('daftar-roti'); wadah.innerHTML = ""; 
             if(data.length === 0) {
-                wadah.innerHTML = `<div class="text-center py-20 text-stone-400 italic text-sm">Kue tidak ditemukan...</div>`; return;
+                wadah.innerHTML = `<div class="col-span-full text-center py-20 text-white/50 italic text-sm border-2 border-dashed border-white/20 rounded-3xl">Pilihan menu tidak ditemukan...</div>`; return;
             }
 
             data.forEach((item, index) => {
                 const isHabis = item.stok <= 0;
-                const statusStok = isHabis ? `<span class="text-red-500 font-bold uppercase tracking-widest text-[9px] italic">Habis</span>` : `<span class="text-green-600 font-bold uppercase tracking-widest text-[9px]">Stok: ${item.stok}</span>`;
+                const statusStok = isHabis ? `<span class="text-red-500 font-bold uppercase tracking-widest text-[9px] italic">Habis</span>` : `<span class="text-teal-600 font-bold uppercase tracking-widest text-[9px]">Sisa Stok: ${item.stok}</span>`;
                 const isBestSeller = index < 2 && !isHabis;
-                const hargaHtml = item.hargaCoret ? `<span>${item.harga}</span><span class="text-red-300 line-through text-xs ml-2">${item.hargaCoret}</span>` : `<span>${item.harga}</span>`;
+                const hargaHtml = item.hargaCoret ? `<span class="text-[#004d4d]">${item.harga}</span><span class="text-gray-400 line-through text-xs ml-2">${item.hargaCoret}</span>` : `<span class="text-[#004d4d]">${item.harga}</span>`;
                 
                 let arrayGambar = Array.isArray(item.gambar) ? item.gambar : [item.gambar];
                 let gambarPertama = arrayGambar[0];
                 let dataGambarAttr = JSON.stringify(arrayGambar).replace(/'/g, "&#39;");
 
-                let badgePO = item.sistemPO === 'Pre-Order' ? `<div class="absolute top-4 left-4 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border border-purple-200 z-10">PRE-ORDER</div>` : '';
-                let labelBeliKilat = item.sistemPO === 'Pre-Order' ? 'PO Kilat' : 'Beli Kilat';
+                let badgePO = item.sistemPO === 'Pre-Order' ? `<div class="absolute top-4 left-4 bg-[#004d4d] text-gold px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border border-gold z-10">PRE-ORDER</div>` : '';
+                let labelBeliKilat = item.sistemPO === 'Pre-Order' ? 'PO Cepat' : 'Beli Cepat';
                 
                 let isFavorit = daftarFavorit.includes(item.id);
 
                 const card = `
-                    <div class="bg-white rounded-[2.5rem] shadow-md border border-stone-50 overflow-hidden relative animate-fade-in group">
-                        <div class="relative overflow-hidden h-80 bg-stone-100 flex items-center justify-center">
+                    <div class="luxury-card overflow-hidden relative group">
+                        <div class="relative overflow-hidden h-64 bg-gray-100 flex items-center justify-center border-b border-gray-100">
                             <img src="${gambarPertama}" data-images='${dataGambarAttr}' loading="lazy" class="w-full h-full object-cover slideshow-img ${isHabis ? 'sold-out-img' : ''} transition-transform duration-700 group-hover:scale-110">
                             ${badgePO}
-                            ${item.kategoriTema && item.kategoriTema.trim() !== 'Reguler' ? `<div class="absolute top-4 right-4 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-2xl shadow-sm text-[9px] font-black uppercase tracking-widest border border-amber-200"><i class="fas fa-gift mr-1"></i> ${item.kategoriTema}</div>` : ''}
-                            ${isBestSeller ? `<div class="absolute bottom-4 left-4 bg-amber-800 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase shadow-lg z-10">bestseller</div>` : ''}
+                            ${item.kategoriTema && item.kategoriTema.trim() !== 'Reguler' ? `<div class="absolute top-4 right-4 bg-white/90 backdrop-blur text-teal-800 px-3 py-1.5 rounded-2xl shadow-sm text-[9px] font-black uppercase tracking-widest"><i class="fas fa-tag text-gold mr-1"></i> ${item.kategoriTema}</div>` : ''}
+                            ${isBestSeller ? `<div class="absolute bottom-4 left-4 bg-gold text-[#004d4d] px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest shadow-lg z-10 border border-[#004d4d]/20"><i class="fas fa-crown"></i> best seller</div>` : ''}
                             ${item.hargaCoret && !isHabis ? `<div class="absolute top-16 right-4 badge-diskon">Promo Diskon</div>` : ''}
-                            ${isHabis ? '<div class="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-20"><span class="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border-2 border-white animate-pulse">Sold Out</span></div>' : ''}
+                            ${isHabis ? '<div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-20"><span class="bg-red-600 text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl border-2 border-white">Sold Out</span></div>' : ''}
                             
-                            <button onclick="toggleFavorit('${item.id}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-lg shadow-lg border border-stone-100 transition-transform active:scale-75 ${isFavorit ? 'text-red-500' : 'text-stone-300'} z-30">
+                            <button onclick="toggleFavorit('${item.id}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-lg shadow-lg border border-gray-100 transition-transform active:scale-75 ${isFavorit ? 'text-red-500' : 'text-gray-300 hover:text-red-400'} z-30">
                                 <i class="fas fa-heart"></i>
                             </button>
                         </div>
-                        <div class="p-8 text-center">
-                            <h3 class="text-lg font-black text-stone-800 uppercase tracking-widest leading-tight">${item.nama}</h3>
-                            <div class="flex items-center justify-center gap-2 mt-2 mb-4">
-                                ${item.berat ? `<span class="text-[10px] text-stone-400 font-medium">${item.berat}</span>` : ''}
-                                ${item.berat ? `<span class="text-stone-200">|</span>` : ''}
+                        <div class="p-6 text-center">
+                            <h3 class="text-base font-black text-[#004d4d] uppercase tracking-widest leading-tight mb-2">${item.nama}</h3>
+                            <div class="flex items-center justify-center gap-2 mb-4">
+                                ${item.berat ? `<span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">${item.berat}</span> <span class="text-gray-200">|</span>` : ''}
                                 ${statusStok}
                             </div>
-                            <div class="mb-6 text-amber-900 font-black text-2xl font-serif">${hargaHtml}</div>
+                            <div class="mb-6 font-black text-xl font-serif-luxury">${hargaHtml}</div>
                             
-                            <div class="grid grid-cols-[1fr_1fr_auto] gap-2">
-                                <button onclick="bukaModalPilihan('${item.id}', 'keranjang')" class="bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">+ Keranjang</button>
-                                <button onclick="bukaModalPilihan('${item.id}', 'kilat')" class="bg-amber-100 text-amber-900 py-4 rounded-full text-[9px] font-bold uppercase tracking-widest active:scale-90 transition-all ${isHabis ? 'opacity-20 pointer-events-none' : ''}">${labelBeliKilat}</button>
-                                <button onclick="bagikanProduk('${item.nama}')" class="bg-stone-50 border border-stone-200 text-stone-500 w-12 rounded-full flex items-center justify-center text-sm active:scale-90 transition-all shadow-sm hover:text-amber-800 hover:border-amber-200"><i class="fas fa-share-alt"></i></button>
+                            <div class="grid grid-cols-[1fr_auto] gap-2 mb-2">
+                                <button onclick="bukaModalPilihan('${item.id}', 'keranjang')" class="bg-[#008080] hover:bg-[#004d4d] text-white py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors ${isHabis ? 'opacity-30 pointer-events-none' : ''}">+ Keranjang</button>
+                                <button onclick="bagikanProduk('${item.nama}')" class="bg-gray-50 border border-gray-200 text-gray-500 px-4 rounded-xl flex items-center justify-center text-sm transition-colors hover:text-[#008080] hover:border-[#008080]"><i class="fas fa-share-alt"></i></button>
                             </div>
+                            <button onclick="bukaModalPilihan('${item.id}', 'kilat')" class="w-full bg-gold/10 hover:bg-gold hover:text-[#004d4d] text-amber-700 border border-gold py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isHabis ? 'opacity-30 pointer-events-none' : ''}">${labelBeliKilat}</button>
                         </div>
                     </div>`;
                 wadah.innerHTML += card;
@@ -406,14 +475,14 @@
             } else {
                 daftarFavorit.push(id); 
                 showToast("Disimpan ke Favorit ❤️", "fa-heart text-red-500");
-                confetti({ particleCount: 30, spread: 50, origin: { y: 0.9 }, colors: ['#ef4444'] });
+                confetti({ particleCount: 30, spread: 50, origin: { y: 0.9 }, colors: ['#D4AF37', '#008080'] });
             }
             localStorage.setItem('favorit_yani', JSON.stringify(daftarFavorit));
             filterMenu(); 
         }
 
         function bagikanProduk(namaProduk) {
-            const pesanShare = `Cek menu enak ini dari Douceur De Yani: *${namaProduk}*!\nPesan sekarang yuk: `;
+            const pesanShare = `Nikmati kemewahan rasa dari Douceur De Yani: *${namaProduk}*!\nPesan sekarang yuk: `;
             const urlToko = window.location.href;
 
             if (navigator.share) {
@@ -435,7 +504,7 @@
             if(!inputWa) return showToast("Masukkan nomor WA kamu!", "fa-exclamation-triangle");
 
             const wadahHasil = document.getElementById('hasil-lacak');
-            wadahHasil.innerHTML = '<p class="text-[10px] text-stone-400 text-center italic mt-4"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari riwayat pesanan...</p>';
+            wadahHasil.innerHTML = '<p class="text-[10px] text-[#008080] text-center italic mt-4"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari riwayat pesanan...</p>';
 
             try {
                 const snapshot = await db.collection("pesanan").where("noWA", "==", inputWa).get();
@@ -452,17 +521,17 @@
                 let htmlHasil = '';
                 orders.slice(0, 5).forEach((order, idx) => {
                     const tanggal = order.waktuOrder ? order.waktuOrder.toDate().toLocaleDateString('id-ID', {day: 'numeric', month:'short'}) : 'Baru';
-                    const statusWarna = order.status === 'Selesai' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-100 text-amber-700 border-amber-200';
+                    const statusWarna = order.status === 'Selesai' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gold/20 text-amber-800 border-gold';
                     const rincianPendek = order.detailPesanan.split('\n')[0].substring(3); 
                     
                     htmlHasil += `
-                        <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 shadow-sm animate-fade-in" style="animation-delay: ${idx * 0.1}s">
-                            <div class="flex justify-between items-center mb-2 border-b border-stone-200/50 pb-2">
-                                <span class="text-[9px] font-bold text-stone-400"><i class="far fa-calendar-alt"></i> ${tanggal}</span>
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm animate-fade-in" style="animation-delay: ${idx * 0.1}s">
+                            <div class="flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
+                                <span class="text-[10px] font-bold text-gray-400"><i class="far fa-calendar-alt"></i> ${tanggal}</span>
                                 <span class="text-[8px] font-black uppercase px-2 py-1 rounded border ${statusWarna} shadow-sm">${order.status || 'Baru Masuk'}</span>
                             </div>
-                            <p class="text-[10px] text-stone-700 font-bold mb-1">${rincianPendek} ...</p>
-                            <p class="text-[9px] text-stone-400 font-bold">Total: Rp ${(order.totalHarga || 0).toLocaleString('id-ID')}</p>
+                            <p class="text-xs text-[#004d4d] font-bold mb-1">${rincianPendek} ...</p>
+                            <p class="text-[10px] text-gray-500 font-bold">Total: Rp ${(order.totalHarga || 0).toLocaleString('id-ID')}</p>
                         </div>`;
                 });
                 wadahHasil.innerHTML = htmlHasil;
@@ -484,14 +553,17 @@
                     }
                 } catch(e){}
             });
-        }, 2000);
+        }, 3000);
 
         function bukaModalPilihan(id, mode) {
             itemAktif = semuaMenu.find(i => i.id === id);
             if (!itemAktif) return;
             document.getElementById('judul-pilihan').innerText = itemAktif.nama;
-            document.getElementById('info-stok-sisa').innerText = `Stok tersedia: ${itemAktif.stok} pcs`;
+            
+            // Keterangan sisa stok di modal
+            document.getElementById('info-stok-sisa').innerHTML = `<i class="fas fa-box-open mr-1"></i> Tersisa: ${itemAktif.stok} Pcs`; 
             document.getElementById('input-qty').value = 1;
+            
             const areaBerat = document.getElementById('area-berat');
             if(itemAktif.jenis === 'Kue') {
                 areaBerat.classList.remove('hidden');
@@ -535,9 +607,51 @@
             }
             updateUIKeranjang(); tutupModalPilihan();
             showToast(`${qty} ${itemAktif.nama} ditambahkan!`, "fa-check-circle");
-            confetti({ particleCount: 70, origin: { y: 0.8 }, colors: ['#b45309', '#f59e0b', '#78716c'] });
+            confetti({ particleCount: 50, origin: { y: 0.8 }, colors: ['#D4AF37', '#008080'] });
         }
 
+        function filterMenu() {
+            const keyword = document.getElementById('input-cari').value.toLowerCase();
+            const hasilFilter = semuaMenu.filter(item => { 
+                let cocokKategori = false;
+                
+                if(kategoriSekarang === 'Semua') {
+                    cocokKategori = true;
+                } else if(kategoriSekarang === 'Favorit') {
+                    cocokKategori = daftarFavorit.includes(item.id);
+                } else {
+                    const katItem = item.kategoriTema ? item.kategoriTema.trim() : 'Reguler';
+                    cocokKategori = (katItem === kategoriSekarang); 
+                }
+
+                return cocokKategori && item.nama.toLowerCase().includes(keyword); 
+            });
+            tampilkanMenu(hasilFilter);
+        }
+
+        function updateUIKeranjang() {
+            const count = document.getElementById('cart-count'); const totalLabel = document.getElementById('total-harga-keranjang'); const list = document.getElementById('cart-items');
+            let totalDuit = 0; const totalItem = keranjang.reduce((total, item) => total + item.jumlah, 0);
+            count.innerText = totalItem; count.classList.toggle('hidden', keranjang.length === 0);
+            if (keranjang.length === 0) {
+                list.innerHTML = `<div class="text-center py-10"><i class="fas fa-shopping-bag text-gray-200 text-5xl mb-3"></i><p class="text-gray-400 text-xs italic">Keranjang belanja kosong.</p></div>`;
+            } else {
+                list.innerHTML = keranjang.map((item, index) => {
+                    totalDuit += (ekstrakHarga(item.harga) * item.jumlah);
+                    return `<div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-2">
+                        <div><p class="font-bold text-[#004d4d] text-xs uppercase">${item.nama}</p><p class="text-[10px] text-gray-500 font-bold">${item.berat} | ${item.jumlah}x</p></div>
+                        <button onclick="hapusItem(${index})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash-alt"></i></button>
+                    </div>`;
+                }).join('');
+            }
+            totalLabel.innerText = formatRupiah(totalDuit);
+            document.getElementById('dp-keranjang').innerText = formatRupiah(totalDuit / 2);
+        }
+
+        function resetKeranjang() { if(confirm("Hapus semua isi keranjang?")) { keranjang = []; updateUIKeranjang(); } }
+        function hapusItem(index) { keranjang.splice(index, 1); updateUIKeranjang(); }
+        function toggleCart() { document.getElementById('modal-cart').classList.toggle('hidden'); }
+        
         function bukaSK() {
             const nama = document.getElementById('nama-pembeli').value.trim();
             const wa = document.getElementById('wa-pembeli').value.trim();
@@ -554,15 +668,13 @@
         function tutupSK() { document.getElementById('modal-sk').classList.add('hidden'); }
         function cekSetuju() {
             const isChecked = document.getElementById('check-setuju').checked; const btn = document.getElementById('btn-lanjut-wa');
-            btn.disabled = !isChecked; btn.className = isChecked ? "bg-stone-800 text-white py-4 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-md active:scale-95" : "bg-stone-300 text-white py-4 rounded-full text-[9px] font-bold uppercase opacity-50 pointer-events-none";
+            btn.disabled = !isChecked; btn.className = isChecked ? "bg-[#008080] hover:bg-[#004d4d] text-gold border border-gold py-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md active:scale-95 transition-all" : "bg-gray-300 text-white py-4 rounded-xl text-[10px] font-black uppercase opacity-50 pointer-events-none";
         }
 
-
         // ========================================================
-        // FITUR BARU: FUNGSI PENGIRIM PESAN KE TELEGRAM OWNER
+        // FUNGSI PENGIRIM PESAN KE TELEGRAM OWNER
         // ========================================================
         async function kirimNotifTelegram(namaPelanggan, noWA, detailPesanan, totalHarga) {
-            // Token Bot dan Chat ID Owner
             const BOT_TOKEN = "8610624303:AAH_Vsf3fzYWx4_iN2RBlV-qGeaCNsjTiuw";
             const CHAT_ID = "1444132958";
 
@@ -596,7 +708,6 @@ Cek Web Owner untuk update status pesanan!`;
             }
         }
 
-
         // DATABASE PROCESS + PEMANGGILAN FUNGSI TELEGRAM
         async function prosesKeDatabase() {
             const btn = document.getElementById('btn-lanjut-wa');
@@ -626,7 +737,7 @@ Cek Web Owner untuk update status pesanan!`;
                 // 1. Simpan ke Firebase Database
                 await db.collection("pesanan").add(dataPesanan);
                 
-                // 2. Kirim Notifikasi ke Telegram Owner (INI FITUR BARUNYA!)
+                // 2. Kirim Notifikasi ke Telegram Owner
                 await kirimNotifTelegram(dataPembeliTemp.nama, dataPembeliTemp.wa, detailTeks, totalDuitAngka);
                 
                 // 3. Potong Stok Menu
@@ -639,7 +750,7 @@ Cek Web Owner untuk update status pesanan!`;
                     }
                 }
 
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#008080'] });
                 showToast("Pesanan Berhasil Dikirim!", "fa-check-double");
                 setTimeout(() => {
                     tutupSK(); keranjang = []; updateUIKeranjang();
@@ -652,67 +763,6 @@ Cek Web Owner untuk update status pesanan!`;
                 showToast("Terjadi kesalahan koneksi.", "fa-wifi"); btn.innerHTML = 'Kirim Pesanan'; btn.disabled = false;
             }
         }
-
-        // FILTER LOGIC
-        function filterMenu() {
-            const keyword = document.getElementById('input-cari').value.toLowerCase();
-            const hasilFilter = semuaMenu.filter(item => { 
-                let cocokKategori = false;
-                
-                if(kategoriSekarang === 'Semua') {
-                    cocokKategori = true;
-                } else if(kategoriSekarang === 'Favorit') {
-                    cocokKategori = daftarFavorit.includes(item.id);
-                } else {
-                    const katItem = item.kategoriTema ? item.kategoriTema.trim() : 'Reguler';
-                    cocokKategori = (katItem === kategoriSekarang); 
-                }
-
-                return cocokKategori && item.nama.toLowerCase().includes(keyword); 
-            });
-            tampilkanMenu(hasilFilter);
-        }
-
-        function filterKategori(kat, element) {
-            kategoriSekarang = kat;
-            
-            document.querySelectorAll('.btn-filter').forEach(btn => { 
-                btn.className = "btn-filter bg-white text-stone-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-100 shadow-sm transition-all whitespace-nowrap";
-            });
-            
-            if (kat === 'Semua') {
-                element.className = "btn-filter bg-stone-800 text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm transition-all whitespace-nowrap";
-            } else if (kat === 'Favorit') {
-                element.className = "btn-filter bg-red-50 text-red-500 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-200 shadow-sm transition-all whitespace-nowrap";
-            } else {
-                element.className = "btn-filter bg-amber-100 text-amber-900 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-300 shadow-sm transition-all whitespace-nowrap";
-            }
-            
-            filterMenu();
-        }
-
-        function updateUIKeranjang() {
-            const count = document.getElementById('cart-count'); const totalLabel = document.getElementById('total-harga-keranjang'); const list = document.getElementById('cart-items');
-            let totalDuit = 0; const totalItem = keranjang.reduce((total, item) => total + item.jumlah, 0);
-            count.innerText = totalItem; count.classList.toggle('hidden', keranjang.length === 0);
-            if (keranjang.length === 0) {
-                list.innerHTML = `<div class="text-center py-10"><i class="fas fa-shopping-basket text-stone-100 text-5xl mb-3"></i><p class="text-stone-400 text-[10px] italic">Keranjang kosong...</p></div>`;
-            } else {
-                list.innerHTML = keranjang.map((item, index) => {
-                    totalDuit += (ekstrakHarga(item.harga) * item.jumlah);
-                    return `<div class="flex justify-between items-center bg-stone-50 p-4 rounded-2xl border border-stone-100 shadow-sm">
-                        <div><p class="font-bold text-stone-800 text-[11px] uppercase">${item.nama}</p><p class="text-[9px] text-stone-400 font-bold">${item.berat} | ${item.jumlah}x</p></div>
-                        <button onclick="hapusItem(${index})" class="text-red-300 p-2"><i class="fas fa-trash-alt"></i></button>
-                    </div>`;
-                }).join('');
-            }
-            totalLabel.innerText = formatRupiah(totalDuit);
-            document.getElementById('dp-keranjang').innerText = formatRupiah(totalDuit / 2);
-        }
-
-        function resetKeranjang() { if(confirm("Hapus semua isi keranjang?")) { keranjang = []; updateUIKeranjang(); } }
-        function hapusItem(index) { keranjang.splice(index, 1); updateUIKeranjang(); }
-        function toggleCart() { document.getElementById('modal-cart').classList.toggle('hidden'); }
         
         window.onscroll = function() {
             const btn = document.getElementById('btn-scroll-top');
