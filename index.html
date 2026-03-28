@@ -290,13 +290,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let keranjang = [];
+        // 1. FITUR KERANJANG PINTAR (Diambil dari memori HP pelanggan)
+        let keranjang = JSON.parse(localStorage.getItem('keranjang_yani_belanja')) || [];
+        
         let semuaMenu = [];
         let daftarKategoriTema = new Set();
         let kategoriSekarang = 'Semua';
         let itemAktif = null;
         let dataPembeliTemp = { nama: "", wa: "", metode: "", alamat: "" };
         let daftarFavorit = JSON.parse(localStorage.getItem('favorit_yani')) || [];
+
+        // Langsung perbarui tampilan ikon keranjang saat web pertama dibuka
+        updateUIKeranjang();
 
         // FUNGSI PLUS MINUS JUMLAH KUE DENGAN VALIDASI STOK
         function ubahQty(angka) {
@@ -579,6 +584,7 @@
 
         function tutupModalPilihan() { document.getElementById('modal-pilihan').classList.add('hidden'); }
 
+        // 2. SIMPAN KERANJANG KE LOCALSTORAGE SAAT TOMBOL TAMBAH DIKLIK
         function eksekusiPilihan(mode) {
             const qty = parseInt(document.getElementById('input-qty').value);
             const beratVal = document.getElementById('pilih-berat').value;
@@ -595,6 +601,7 @@
 
             if (mode === 'kilat') {
                 keranjang = [{ id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty }];
+                localStorage.setItem('keranjang_yani_belanja', JSON.stringify(keranjang)); // Simpan ke storage
                 updateUIKeranjang(); tutupModalPilihan(); toggleCart(); return;
             }
 
@@ -605,6 +612,8 @@
             } else {
                 keranjang.push({ id: itemAktif.id, nama: itemAktif.nama, harga: hargaFinal, berat: labelBerat, jumlah: qty });
             }
+            
+            localStorage.setItem('keranjang_yani_belanja', JSON.stringify(keranjang)); // Simpan ke storage
             updateUIKeranjang(); tutupModalPilihan();
             showToast(`${qty} ${itemAktif.nama} ditambahkan!`, "fa-check-circle");
             confetti({ particleCount: 50, origin: { y: 0.8 }, colors: ['#D4AF37', '#008080'] });
@@ -648,8 +657,22 @@
             document.getElementById('dp-keranjang').innerText = formatRupiah(totalDuit / 2);
         }
 
-        function resetKeranjang() { if(confirm("Hapus semua isi keranjang?")) { keranjang = []; updateUIKeranjang(); } }
-        function hapusItem(index) { keranjang.splice(index, 1); updateUIKeranjang(); }
+        // 3. HAPUS KERANJANG DARI LOCALSTORAGE
+        function resetKeranjang() { 
+            if(confirm("Hapus semua isi keranjang?")) { 
+                keranjang = []; 
+                localStorage.removeItem('keranjang_yani_belanja');
+                updateUIKeranjang(); 
+            } 
+        }
+
+        // 4. HAPUS SATU ITEM DARI LOCALSTORAGE
+        function hapusItem(index) { 
+            keranjang.splice(index, 1); 
+            localStorage.setItem('keranjang_yani_belanja', JSON.stringify(keranjang));
+            updateUIKeranjang(); 
+        }
+        
         function toggleCart() { document.getElementById('modal-cart').classList.toggle('hidden'); }
         
         function bukaSK() {
@@ -753,7 +776,13 @@ Cek Web Owner untuk update status pesanan!`;
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#008080'] });
                 showToast("Pesanan Berhasil Dikirim!", "fa-check-double");
                 setTimeout(() => {
-                    tutupSK(); keranjang = []; updateUIKeranjang();
+                    tutupSK(); 
+                    
+                    // 5. BERSIHKAN KERANJANG LOCALSTORAGE SETELAH BERHASIL BELI
+                    keranjang = []; 
+                    localStorage.removeItem('keranjang_yani_belanja');
+                    updateUIKeranjang();
+                    
                     document.getElementById('nama-pembeli').value = ""; document.getElementById('wa-pembeli').value = "";
                     document.getElementById('alamat-pembeli').value = ""; document.getElementById('metode-kirim').value = "Pick Up";
                     toggleAlamat(); btn.innerHTML = 'Kirim Pesanan';
