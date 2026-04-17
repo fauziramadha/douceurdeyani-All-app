@@ -96,7 +96,7 @@
                 linear-gradient(rgba(201,162,39,.04) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(201,162,39,.04) 1px, transparent 1px);
             background-size: 60px 60px;
-            animation: gridShift 40s linear infinite; /* Animasi dihidupkan kembali dengan durasi lambat */
+            animation: gridShift 40s linear infinite; 
             will-change: background-position;
         }
         @keyframes gridShift { from { background-position: 0 0; } to { background-position: 60px 60px; } }
@@ -253,7 +253,8 @@
 
         /* ── OPTIMIZED PRODUCT CARDS ── */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2px; }
-        .p-card { background: var(--ivory); position: relative; border: 1px solid rgba(201,162,39,.15); transition: transform 0.4s ease, box-shadow 0.4s ease; transform: translateZ(0); }
+        
+        .p-card { background: var(--ivory); position: relative; border: 1px solid rgba(201,162,39,.15); transition: transform 0.4s ease, box-shadow 0.4s ease; transform: translateZ(0); height: 100%;}
         .p-card:hover { transform: translateY(-6px); border-color: var(--gold); box-shadow: 0 15px 35px rgba(0,0,0,.3); z-index: 2; }
         .p-card-img-wrap { position: relative; height: 240px; overflow: hidden; background: #e8e0d4; }
         .p-card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
@@ -510,7 +511,8 @@
                 <div class="filter-chips" id="container-filter"></div>
             </div>
 
-            <div class="product-grid reveal" id="daftar-roti">
+            <!-- Wrapper utama TIDAK pakai .reveal, agar tidak menyebabkan space kosong -->
+            <div class="product-grid" id="daftar-roti">
                 <div style="background:var(--ivory); border:1px solid rgba(201,162,39,.1); overflow:hidden;">
                     <div style="height:240px; background:#e8e0d4;"></div>
                     <div style="padding:24px; color:#aaa; font-size:12px;">Memuat koleksi premium...</div>
@@ -535,6 +537,7 @@
 
 <button id="btn-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-chevron-up"></i></button>
 
+<!-- Modals -->
 <div class="modal-overlay" id="modal-pilihan">
     <div class="modal-box">
         <div class="modal-header">
@@ -652,7 +655,7 @@
         (function animRing() { rx += (mx-rx)*.15; ry += (my-ry)*.15; ring.style.left = rx+'px'; ring.style.top = ry+'px'; requestAnimationFrame(animRing); })();
     }
 
-    // ── SCROLL NAVIGASI STICKY & REVEAL (Dioptimalkan) ──
+    // ── SCROLL NAVIGASI STICKY & REVEAL OBSERVER ──
     let isScrolling = false;
     window.addEventListener('scroll', () => {
         if (!isScrolling) {
@@ -666,14 +669,15 @@
         }
     }, { passive: true }); 
 
-    const reveals = document.querySelectorAll('.reveal');
+    // Observer ini yang mengatur efek scroll "muncul naik"
     const revObs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); }), { threshold: .05 });
+    const reveals = document.querySelectorAll('.reveal');
     reveals.forEach(el => revObs.observe(el));
 
     // ── GENERATOR PARTIKEL HEMAT GPU ──
     function spawnParticle() {
         const pWrap = document.getElementById('particles-wrap');
-        if (!pWrap || pWrap.childElementCount > 20) return; // Maksimal 20 partikel agar HP tidak panas
+        if (!pWrap || pWrap.childElementCount > 20) return;
         const p = document.createElement('div');
         p.className = 'particle';
         const size = Math.random() * 3 + 1;
@@ -787,35 +791,46 @@
             const hargaHTML = item.hargaCoret ? `<span class="price-main">${item.harga}</span><span class="price-strike">${item.hargaCoret}</span>` : `<span class="price-main">${item.harga}</span>`;
             const labelKilat = item.sistemPO === 'Pre-Order' ? 'PO Cepat' : 'Beli Kilat';
 
+            /* MODIFIKASI TERBARU: 
+               Setiap card dibungkus class "reveal", jadi masing-masing akan naik perlahan 
+               saat kamu men-scroll layaknya "Kisah Kami". Kita hilangkan style animation fadeUp bawaan. */
             w.innerHTML += `
-            <div class="p-card" style="animation:fadeUp .5s ${idx*.07}s both;">
-                <div class="p-card-img-wrap">
-                    <img src="${imgs[0]}" data-images='${imgAttr}' loading="lazy" class="p-card-img slideshow-img ${sold?'sold-out':''}" data-index="0">
-                    <div class="img-overlay"></div>
-                    ${item.sistemPO==='Pre-Order'?`<div class="badge-po">Pre-Order</div>`:''}
-                    ${item.kategoriTema&&item.kategoriTema.trim()!=='Reguler'?`<div class="badge-cat"><i class="fas fa-tag" style="font-size:7px;margin-right:4px;color:var(--gold)"></i>${item.kategoriTema}</div>`:''}
-                    ${isBest?`<div class="badge-bestseller"><i class="fas fa-crown" style="font-size:8px;margin-right:4px;"></i>Best Seller</div>`:''}
-                    ${item.hargaCoret&&!sold?`<div class="badge-promo">Promo</div>`:''}
-                    ${sold?`<div class="badge-soldout"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4);"><div style="background: #e53e3e; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .15em; padding: 8px 20px; text-transform: uppercase; border: 2px solid rgba(255,255,255,.6);">Sold Out</div></div></div>`:''}
-                    <button onclick="toggleFavorit('${item.id}')" class="fav-btn ${isFav?'active':''}"><i class="fas fa-heart"></i></button>
-                </div>
-                <div class="p-card-body">
-                    <div class="p-card-cat">${item.sistemPO==='Pre-Order'?'Pre-Order · ':''}Homemade Bakery</div>
-                    <div class="p-card-name">${item.nama}</div>
-                    <div class="p-card-meta">
-                        ${item.berat?`<span>${item.berat}</span><span class="meta-dot"></span>`:''}
-                        <span style="color:${sold?'#e53e3e':'var(--teal)'}">${sold?'Habis':`Sisa ${item.stok} pcs`}</span>
+            <div class="reveal card-wrapper" style="height: 100%;">
+                <div class="p-card">
+                    <div class="p-card-img-wrap">
+                        <img src="${imgs[0]}" data-images='${imgAttr}' loading="lazy" class="p-card-img slideshow-img ${sold?'sold-out':''}" data-index="0">
+                        <div class="img-overlay"></div>
+                        ${item.sistemPO==='Pre-Order'?`<div class="badge-po">Pre-Order</div>`:''}
+                        ${item.kategoriTema&&item.kategoriTema.trim()!=='Reguler'?`<div class="badge-cat"><i class="fas fa-tag" style="font-size:7px;margin-right:4px;color:var(--gold)"></i>${item.kategoriTema}</div>`:''}
+                        ${isBest?`<div class="badge-bestseller"><i class="fas fa-crown" style="font-size:8px;margin-right:4px;"></i>Best Seller</div>`:''}
+                        ${item.hargaCoret&&!sold?`<div class="badge-promo">Promo</div>`:''}
+                        ${sold?`<div class="badge-soldout"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4);"><div style="background: #e53e3e; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .15em; padding: 8px 20px; text-transform: uppercase; border: 2px solid rgba(255,255,255,.6);">Sold Out</div></div></div>`:''}
+                        <button onclick="toggleFavorit('${item.id}')" class="fav-btn ${isFav?'active':''}"><i class="fas fa-heart"></i></button>
                     </div>
-                    <div class="p-card-divider"></div>
-                    <div class="p-card-price-row">${hargaHTML}</div>
-                    <div class="p-card-actions">
-                        <button onclick="bukaModalPilihan('${item.id}','keranjang')" class="btn-cart ${sold?'disabled':''}">+ Keranjang</button>
-                        <button onclick="bagikanProduk('${item.nama}')" class="btn-share"><i class="fas fa-share-alt"></i></button>
-                        <button onclick="bukaModalPilihan('${item.id}','kilat')" class="btn-quick ${sold?'disabled':''}">${labelKilat}</button>
+                    <div class="p-card-body">
+                        <div class="p-card-cat">${item.sistemPO==='Pre-Order'?'Pre-Order · ':''}Homemade Bakery</div>
+                        <div class="p-card-name">${item.nama}</div>
+                        <div class="p-card-meta">
+                            ${item.berat?`<span>${item.berat}</span><span class="meta-dot"></span>`:''}
+                            <span style="color:${sold?'#e53e3e':'var(--teal)'}">${sold?'Habis':`Sisa ${item.stok} pcs`}</span>
+                        </div>
+                        <div class="p-card-divider"></div>
+                        <div class="p-card-price-row">${hargaHTML}</div>
+                        <div class="p-card-actions">
+                            <button onclick="bukaModalPilihan('${item.id}','keranjang')" class="btn-cart ${sold?'disabled':''}">+ Keranjang</button>
+                            <button onclick="bagikanProduk('${item.nama}')" class="btn-share"><i class="fas fa-share-alt"></i></button>
+                            <button onclick="bukaModalPilihan('${item.id}','kilat')" class="btn-quick ${sold?'disabled':''}">${labelKilat}</button>
+                        </div>
                     </div>
                 </div>
             </div>`;
         });
+
+        // Pastikan setiap kartu baru yang muncul segera diawasi oleh scroll observer
+        setTimeout(() => {
+            const newCards = w.querySelectorAll('.card-wrapper.reveal');
+            newCards.forEach(el => revObs.observe(el));
+        }, 50);
     }
 
     function toggleFavorit(id) {
