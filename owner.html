@@ -542,8 +542,52 @@
             listPesanan.innerHTML = orderHtml;
         });
 
-        async function updateStatusPesanan(id, statusBaru) { 
-            await db.collection("pesanan").doc(id).update({ status: statusBaru, pin: PIN_AKSES }); 
+                async function updateStatusPesanan(id, statusBaru) { 
+            try {
+                // 1. Ambil data pesanan untuk mengetahui Nama & No WA pelanggan
+                const docRef = db.collection("pesanan").doc(id);
+                const snapshot = await docRef.get();
+                const data = snapshot.data();
+
+                if (!data) return;
+
+                // 2. Update status di database Firebase
+                await docRef.update({ status: statusBaru, pin: PIN_AKSES }); 
+
+                // 3. Siapkan pesan otomatis berdasarkan perubahan status
+                let pesanStatus = "";
+                if (statusBaru === "Sedang Diproses") {
+                    pesanStatus = `Halo kak *${data.namaPelanggan}*, pesanan kamu sedang kami *PROSES* ya. Mohon ditunggu Sebentar ya! 👩‍🍳✨`;
+                } else if (statusBaru === "Selesai") {
+                    pesanStatus = `Hore! Pesanan kak *${data.namaPelanggan}* sudah *SELESAI* dan siap diambil/dikirim. Terima kasih banyak sudah order di Douceur De Yani! ❤️`;
+                } else if (statusBaru === "Dibatalkan") {
+                    pesanStatus = `Mohon maaf kak *${data.namaPelanggan}*, pesanan kamu terpaksa kami *BATALKAN*. jika ada kendala Silakan hubungi admin untuk info lebih lanjut. 🙏`;
+                }
+
+                // 4. Kirim notifikasi otomatis via Fonnte (memanggil API Vercel kita)
+                if (pesanStatus !== "") {
+                    // Bersihkan nomor WA (hanya ambil angkanya saja)
+                    let nomorWABersih = (data.noWA || "").replace(/\D/g, '');
+
+                    await fetch('/api/send-wa', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            target: nomorWABersih,
+                            message: pesanStatus
+                        })
+                    });
+                    
+                    alert(`Status diubah ke "${statusBaru}" & WhatsApp otomatis terkirim!`);
+                } else {
+                    // Untuk status "Baru Masuk" tidak perlu kirim notifikasi perubahan status
+                    alert(`Status dikembalikan ke "${statusBaru}"`);
+                }
+
+            } catch (error) {
+                console.error("Error update status:", error);
+                alert("Berhasil update status, tapi gagal mengirim WhatsApp otomatis. Cek koneksi API.");
+            }
         }
         async function hapusPesanan(id) { if(confirm("Hapus pesanan ini secara permanen?")) await db.collection("pesanan").doc(id).delete(); }
 
