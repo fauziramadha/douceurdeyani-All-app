@@ -980,37 +980,85 @@
         } catch(e) { w.innerHTML=`<p style="text-align:center;color:#e53e3e;font-size:11px;padding:16px;">Gagal menghubungkan ke database.</p>`; }
     }
 
-    async function kirimNotifTelegram(nama, wa, detail, total) {
-        const TOKEN="8610624303:AAH_Vsf3fzYWx4_iN2RBlV-qGeaCNsjTiuw", CHAT="1444132958";
-        const teks=`🚨 *PESANAN BARU MASUK!* 🚨\n━━━━━━━━━━━━━━━━━━━━\n👤 *Nama:* ${nama}\n📞 *WA:* ${wa}\n💰 *Total:* Rp ${total.toLocaleString('id-ID')}\n━━━━━━━━━━━━━━━━━━━━\n📦 *Rincian:*\n${detail}\n━━━━━━━━━━━━━━━━━━━━\nCek Web Owner untuk update status!`;
-        try { await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:teks,parse_mode:'Markdown'})}); } catch(e) {}
+        async function kirimNotifTelegram(nama, wa, detail, total) {
+        const teks = `🚨 *PESANAN BARU MASUK!* 🚨\n━━━━━━━━━━━━━━━━━━━━\n👤 *Nama:* ${nama}\n📞 *WA:* ${wa}\n💰 *Total:* Rp ${total.toLocaleString('id-ID')}\n━━━━━━━━━━━━━━━━━━━━\n📦 *Rincian:*\n${detail}\n━━━━━━━━━━━━━━━━━━━━\nCek Web Owner untuk update status!`;
+        try { 
+            // Panggil Jembatan Vercel, BUKAN API Telegram Langsung
+            await fetch('/api/telegram', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: teks })
+            }); 
+        } catch(e) {
+            console.error("Gagal kirim notif Telegram:", e);
+        }
     }
 
     async function prosesKeDatabase() {
-        const btn=document.getElementById('btn-lanjut-wa');
-        btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Memproses...'; btn.disabled=true;
+        const btn = document.getElementById('btn-lanjut-wa');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; btn.disabled = true;
+        
         try {
             let detail='', total=0, items=[];
-            keranjang.forEach((item,i)=>{ detail+=`${i+1}. ${item.nama} (${item.berat}) - ${item.jumlah} Pcs\n`; total+=ekstrakHarga(item.harga)*item.jumlah; items.push({id:item.id,qty:item.jumlah}); });
-            const dp=total/2;
-            detail+=`\n📦 Metode: ${dataPembeliTemp.metode}`;
-            if(dataPembeliTemp.metode==='Kurir') detail+=`\n📍 Alamat: ${dataPembeliTemp.alamat}`;
-            else detail+=`\n⚠️ Note: Batas minimal pengambilan diinfokan admin setelah checkout (jika PO).`;
-            detail+=`\n💳 Wajib DP 50%: ${formatRupiah(dp)}`;
+            keranjang.forEach((item,i)=>{ 
+                detail += `${i+1}. ${item.nama} (${item.berat}) - ${item.jumlah} Pcs\n`; 
+                total += ekstrakHarga(item.harga)*item.jumlah; 
+                items.push({id:item.id,qty:item.jumlah}); 
+            });
+            const dp = total/2;
             
-            await db.collection("pesanan").add({namaPelanggan:dataPembeliTemp.nama,noWA:dataPembeliTemp.wa,detailPesanan:detail,totalHarga:total,status:'Baru Masuk',waktuOrder:firebase.firestore.FieldValue.serverTimestamp()});
-            await kirimNotifTelegram(dataPembeliTemp.nama,dataPembeliTemp.wa,detail,total);
+            detail += `\n📦 Metode: ${dataPembeliTemp.metode}`;
+            if (dataPembeliTemp.metode === 'Kurir') detail += `\n📍 Alamat: ${dataPembeliTemp.alamat}`;
+            else detail += `\n⚠️ Note: Batas minimal pengambilan diinfokan admin setelah checkout (jika PO).`;
             
-            for(const item of items) { if(item.id) await db.collection("menuToko").doc(item.id).update({stok:firebase.firestore.FieldValue.increment(-item.qty),pin:"yani123"}); }
+            // 1. Simpan data ke Database (Firebase)
+            await db.collection("pesanan").add({
+                namaPelanggan: dataPembeliTemp.nama,
+                noWA: dataPembeliTemp.wa,
+                detailPesanan: detail,
+                totalHarga: total,
+                status: 'Baru Masuk',
+                waktuOrder: firebase.firestore.FieldValue.serverTimestamp()
+            });
             
+            // 2. Kirim Notifikasi Telegram ke HP Owner (Aman via API Vercel)
+            await kirimNotifTelegram(dataPembeliTemp.nama, dataPembeliTemp.wa, detail, total);
+            
+            // 3. Kurangi Stok di Database
+            for(const item of items) { 
+                if(item.id) await db.collection("menuToko").doc(item.id).update({ stok: firebase.firestore.FieldValue.increment(-item.qty), pin: "yani123" }); 
+            }
+
+            // 4. Kirim WA Otomatis ke Pelanggan (Aman via API Fonnte Vercel)
+            let nomorWABersih = (dataPembeliTemp.wa || "").replace(/\D/g, '');
+            let pesanOtomatis = `Halo kak *${dataPembeliTemp.nama}*, pesanan kamu di *Douceur De Yani* sudah kami terima 😊\n\n` +
+                `*📦 Rincian Pesanan:*\n${detail}\n\n` +
+                `*💰 Total Belanja:* ${formatRupiah(total)}\n` +
+                `*💳 Wajib DP 50%: ${formatRupiah(dp)}*\n\n` +
+                `_Mohon transfer ke DANA: *08157632665* dan kirim bukti transfer di sini ya kak._\n\n` +
+                `Status pesanan kamu saat ini: *Baru Masuk*`;
+
+            await fetch('/api/send-wa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: nomorWABersih, message: pesanOtomatis })
+            });
+
+            // 5. Sukses & Reset UI
             confetti({particleCount:150,spread:70,origin:{y:.6},colors:['#C9A227','#008080']});
             showToast('Pesanan Berhasil Dikirim! 🎉','fa-check-double');
+            
             setTimeout(()=>{
                 tutupSK(); keranjang=[]; localStorage.removeItem('keranjang_yani_belanja'); updateUIKeranjang();
                 ['nama-pembeli','wa-pembeli','alamat-pembeli'].forEach(id=>document.getElementById(id).value='');
                 document.getElementById('metode-kirim').value='Pick Up'; toggleAlamat(); btn.innerHTML='Kirim Pesanan';
-            },2000);
-        } catch(err) { console.error(err); showToast('Terjadi kesalahan koneksi.','fa-wifi'); btn.innerHTML='Kirim Pesanan'; btn.disabled=false; }
+            }, 2000);
+
+        } catch(err) { 
+            console.error(err); 
+            showToast('Terjadi kesalahan koneksi.','fa-wifi'); 
+            btn.innerHTML='Kirim Pesanan'; btn.disabled=false; 
+        }
     }
 </script>
 </body>
