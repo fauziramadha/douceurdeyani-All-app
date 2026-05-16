@@ -3,40 +3,61 @@ module.exports = async function handler(req, res) {
 
     const { target, message } = req.body;
     
-    // Ambil Token dan Session ID
+    // Di Vercel Env, variabel ini sebenarnya berisi Device ID Kakak
     const token = process.env.FLOWKIRIM_TOKEN; 
-    const sessionId = process.env.FLOWKIRIM_SESSION_ID; 
+    const deviceId = process.env.FLOWKIRIM_SESSION_ID; 
 
-    // Format nomor sesuai Postman (wajib @s.whatsapp.net)
+    // Format nomor wajib @s.whatsapp.net
     let formattedTarget = target;
     if (!formattedTarget.includes('@s.whatsapp.net')) {
         formattedTarget = `${formattedTarget}@s.whatsapp.net`;
     }
 
     try {
-        const response = await fetch('https://scan.flowkirim.com/api/whatsapp/messages/text', {
+        // ==========================================
+        // LANGKAH 1: Tukar Device ID menjadi Session ID Asli
+        // ==========================================
+        const sessionResponse = await fetch(`https://scan.flowkirim.com/api/whatsapp/sessions/${deviceId}`, {
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const sessionData = await sessionResponse.json();
+        
+        // Cek apakah penukaran berhasil
+        if (!sessionData.success || !sessionData.data || !sessionData.data.session_id) {
+            console.error("Gagal mendapatkan Session ID asli:", sessionData);
+            return res.status(500).json({ error: 'Device ID tidak valid / Disconnected', detail: sessionData });
+        }
+
+        const activeSessionId = sessionData.data.session_id; // Inilah kunci yang benar!
+
+        // ==========================================
+        // LANGKAH 2: Kirim Pesan dengan Session ID Asli
+        // ==========================================
+        const sendResponse = await fetch('https://scan.flowkirim.com/api/whatsapp/messages/text', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({
-                "session_id": sessionId,
+                "session_id": activeSessionId,
                 "message": message,
                 "to": formattedTarget
             })
         });
         
-        const data = await response.json();
-        
-        // PENCATAT OTOMATIS: Akan menuliskan alasan spesifik dari FlowKirim jika gagal
-        console.log(`Status FlowKirim: ${response.status}`);
-        console.log(`Alasan/Respon:`, JSON.stringify(data));
+        const sendData = await sendResponse.json();
+        console.log(`Status Pengiriman: ${sendResponse.status}`, JSON.stringify(sendData));
 
-        if (response.ok) {
-            res.status(200).json(data);
+        if (sendResponse.ok) {
+            res.status(200).json(sendData);
         } else {
-            res.status(response.status).json(data);
+            res.status(sendResponse.status).json(sendData);
         }
     } catch (error) {
         console.error("Gagal koneksi:", error.message);
