@@ -15,8 +15,8 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        // Menggunakan URL endpoint yang benar sesuai dokumentasi
-        const response = await fetch('https://flowkirim.com/api/whatsapp/messages/text', {
+        // MENGGUNAKAN BASE URL YANG BENAR: scan.flowkirim.com
+        const response = await fetch('https://scan.flowkirim.com/api/whatsapp/messages/text', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -30,8 +30,17 @@ module.exports = async function handler(req, res) {
         });
         
         const data = await response.json();
-        res.status(200).json(data);
+        
+        // Tetap kita catat di log untuk berjaga-jaga
+        console.log("Respon dari FlowKirim:", JSON.stringify(data)); 
+
+        if (response.ok) {
+            res.status(200).json(data);
+        } else {
+            res.status(response.status).json(data);
+        }
     } catch (error) {
+        console.error("Gagal total:", error.message);
         res.status(500).json({ error: error.message });
     }
 }
