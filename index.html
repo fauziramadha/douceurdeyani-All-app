@@ -1029,8 +1029,14 @@
                 if(item.id) await db.collection("menuToko").doc(item.id).update({ stok: firebase.firestore.FieldValue.increment(-item.qty), pin: "yani123" }); 
             }
 
-            // 4. Kirim WA Otomatis ke Pelanggan (Aman via API Fonnte Vercel)
+            // 4. Kirim WA Otomatis ke Pelanggan via FlowKirim (Melalui API Vercel)
             let nomorWABersih = (dataPembeliTemp.wa || "").replace(/\D/g, '');
+            
+            // Konversi nomor '0' di awal menjadi '62' (Wajib untuk FlowKirim)
+            if (nomorWABersih.startsWith('0')) {
+                nomorWABersih = '62' + nomorWABersih.substring(1);
+            }
+
             let pesanOtomatis = `Halo kak *${dataPembeliTemp.nama}*, pesanan kamu di *Douceur De Yani* sudah kami terima 😊\n\n` +
                 `*📦 Rincian Pesanan:*\n${detail}\n\n` +
                 `*💰 Total Belanja:* ${formatRupiah(total)}\n` +
