@@ -1,5 +1,4 @@
 module.exports = async function handler(req, res) {
-    // Hanya izinkan method POST dari website Anda
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     const { target, message } = req.body;
@@ -14,33 +13,61 @@ module.exports = async function handler(req, res) {
         formattedTarget = `${formattedTarget}@s.whatsapp.net`;
     }
 
-    try {
-        // MENGGUNAKAN BASE URL YANG BENAR: scan.flowkirim.com
-        const response = await fetch('https://scan.flowkirim.com/api/whatsapp/messages/text', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify({
-                "session_id": sessionId,
-                "message": message,
-                "to": formattedTarget
-            })
-        });
-        
-        const data = await response.json();
-        
-        // Tetap kita catat di log untuk berjaga-jaga
-        console.log("Respon dari FlowKirim:", JSON.stringify(data)); 
+    // Trik Radar: Daftar kemungkinan alamat asli server FlowKirim
+    const baseUrls = [
+        'https://api.flowkirim.com',
+        'https://app.flowkirim.com',
+        'https://admin.flowkirim.com',
+        'https://scan.flowkirim.com',
+        'https://flowkirim.com'
+    ];
 
-        if (response.ok) {
-            res.status(200).json(data);
-        } else {
-            res.status(response.status).json(data);
+    let lastError = null;
+    let responseData = null;
+    let isSuccess = false;
+
+    // Vercel akan mencoba mengetuk pintu server ini satu per satu secara otomatis
+    for (const baseUrl of baseUrls) {
+        try {
+            const url = `${baseUrl}/api/whatsapp/messages/text`;
+            console.log(`Mencoba mengetuk pintu: ${url}`);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json', // Tambahan sesuai dokumentasi mereka
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({
+                    "session_id": sessionId,
+                    "message": message,
+                    "to": formattedTarget
+                })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                console.log(`BERHASIL! Pintu terbuka di: ${url}`, data);
+                responseData = data;
+                isSuccess = true;
+                break; // Berhenti mencari karena pesan sudah berhasil terkirim
+            } else {
+                console.log(`Ditolak oleh ${url} (Status: ${response.status})`, data);
+                lastError = data;
+            }
+        } catch (error) {
+            console.log(`Pintu ${baseUrl} tertutup rapat/tidak ada.`);
+            lastError = error.message;
         }
-    } catch (error) {
-        console.error("Gagal total:", error.message);
-        res.status(500).json({ error: error.message });
+    }
+
+    // Mengirim hasil akhir ke website Anda
+    if (isSuccess) {
+        res.status(200).json(responseData);
+    } else {
+        console.error("Gagal total di semua pintu. Laporan error terakhir:", lastError);
+        res.status(500).json({ error: 'Semua alamat API gagal', detail: lastError });
     }
 }
