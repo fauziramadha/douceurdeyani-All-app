@@ -564,10 +564,15 @@
                     pesanStatus = `Mohon maaf kak *${data.namaPelanggan}*, pesanan kamu terpaksa kami *BATALKAN*. jika ada kendala Silakan hubungi admin untuk info lebih lanjut. 🙏`;
                 }
 
-                // 4. Kirim notifikasi otomatis via Fonnte (memanggil API Vercel kita)
+                // 4. Kirim notifikasi otomatis via FlowKirim (memanggil API Vercel kita)
                 if (pesanStatus !== "") {
                     // Bersihkan nomor WA (hanya ambil angkanya saja)
                     let nomorWABersih = (data.noWA || "").replace(/\D/g, '');
+                    
+                    // Konversi nomor '0' di awal menjadi '62' (Wajib untuk FlowKirim)
+                    if (nomorWABersih.startsWith('0')) {
+                        nomorWABersih = '62' + nomorWABersih.substring(1);
+                    }
 
                     await fetch('/api/send-wa', {
                         method: 'POST',
