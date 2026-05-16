@@ -1,17 +1,21 @@
 export default async function handler(req, res) {
+    // Hanya izinkan method POST dari website Anda
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     const { target, message } = req.body;
-    const token = process.env.FONNTE_TOKEN; // Diambil dari Vercel Env
+    // Mengambil token FlowKirim dari Vercel Env
+    const token = process.env.FLOWKIRIM_TOKEN; 
 
     try {
-        const response = await fetch('https://api.fonnte.com/send', {
+        const response = await fetch('https://flowkirim.com/api/send', {
             method: 'POST',
-            headers: { 'Authorization': token },
-            body: new URLSearchParams({
-                'target': target,
-                'message': message,
-                'countryCode': '62'
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({
+                target: target,
+                message: message
             })
         });
         const data = await response.json();
