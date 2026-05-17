@@ -1,25 +1,24 @@
 module.exports = async function handler(req, res) {
-    // Hanya menerima metode POST dari FlowKirim
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
         const body = req.body;
-        // PENCATAT OTOMATIS: Untuk melihat bentuk data asli dari FlowKirim jika terjadi error
         console.log("Pesan masuk dari FlowKirim:", JSON.stringify(body));
 
-        // 1. Ekstrak nomor WA dan isi pesan pelanggan (Mendukung beberapa variasi format API WhatsApp)
-        const sender = body.sender || body.from || (body.data && body.data.from) || (body.message && body.message.from);
-        const messageText = body.message || body.text || (body.data && body.data.message) || (body.message && body.message.text);
+        // 1. Ekstrak data menggunakan format ASLI FlowKirim dari log
+        const sender = body.senderNumber; 
+        const messageText = body.messageText;
+        const isFromMe = body.messageFromMe;
 
-        // Jika data kosong atau berupa pesan dari grup/status, abaikan agar bot tidak error
-        if (!sender || !messageText || sender.includes('status') || sender.includes('g.us')) {
-            return res.status(200).json({ status: 'diabaikan', detail: 'Bukan pesan pribadi valid' });
+        // Jika pesan dari kita sendiri, pesan kosong, atau dari grup, hentikan proses agar bot tidak error
+        if (isFromMe || !sender || !messageText || sender.includes('status') || body.isGroup) {
+            return res.status(200).json({ status: 'diabaikan' });
         }
 
-        // Membersihkan format nomor pengirim
+        // Bersihkan ID WhatsApp untuk memori Dify
         const cleanSender = sender.replace('@s.whatsapp.net', '');
 
-        // 2. Minta Jawaban ke Dify (Gemini 2.5 Flash)
+        // 2. Minta Jawaban ke Dify (Gemini) menggunakan Environment Variables
         const difyKey = process.env.DIFY_API_KEY;
         const difyResponse = await fetch('https://api.dify.ai/v1/chat-messages', {
             method: 'POST',
@@ -31,8 +30,8 @@ module.exports = async function handler(req, res) {
                 "inputs": {},
                 "query": messageText,
                 "response_mode": "blocking",
-                "conversation_id": "", // Kosongkan agar Dify otomatis mengingat riwayat chat user
-                "user": cleanSender // Nomor pelanggan dijadikan ID agar bot ingat siapa yang dilayani
+                "conversation_id": "", 
+                "user": cleanSender 
             })
         });
 
@@ -44,9 +43,10 @@ module.exports = async function handler(req, res) {
             return res.status(500).json({ error: 'Dify tidak menjawab' });
         }
 
-        // 3. Kirim Balasan ke WhatsApp via FlowKirim (Menggunakan sistem penukar Session ID otomatis)
+        // 3. Kirim Balasan Otomatis via FlowKirim
         const token = process.env.FLOWKIRIM_TOKEN;
-        const deviceId = process.env.FLOWKIRIM_SESSION_ID; 
+        // Menggunakan sessionDeviceId langsung dari webhook FlowKirim
+        const deviceId = body.sessionDeviceId || process.env.FLOWKIRIM_SESSION_ID; 
 
         // Tukar Device ID menjadi Session ID Asli
         const sessionRes = await fetch(`https://scan.flowkirim.com/api/whatsapp/sessions/${deviceId}`, {
@@ -59,12 +59,11 @@ module.exports = async function handler(req, res) {
         const sessionData = await sessionRes.json();
         
         if (!sessionData.success || !sessionData.data || !sessionData.data.session_id) {
-            return res.status(500).json({ error: 'Device ID FlowKirim terputus' });
+            return res.status(500).json({ error: 'Gagal menukar Session ID' });
         }
         const activeSessionId = sessionData.data.session_id;
 
-        // Kirim Pesan
-        let formattedTarget = cleanSender.includes('@s.whatsapp.net') ? cleanSender : `${cleanSender}@s.whatsapp.net`;
+        // Eksekusi pengiriman balasan ke WhatsApp pelanggan
         const sendRes = await fetch('https://scan.flowkirim.com/api/whatsapp/messages/text', {
             method: 'POST',
             headers: { 
@@ -74,7 +73,7 @@ module.exports = async function handler(req, res) {
             body: JSON.stringify({
                 "session_id": activeSessionId,
                 "message": aiAnswer,
-                "to": formattedTarget
+                "to": sender 
             })
         });
 
