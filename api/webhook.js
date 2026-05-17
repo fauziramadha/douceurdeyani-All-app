@@ -17,9 +17,25 @@ module.exports = async function handler(req, res) {
 
         // Bersihkan ID WhatsApp untuk memori Dify
         const cleanSender = sender.replace('@s.whatsapp.net', '');
-
-        // 2. Minta Jawaban ke Dify (Gemini) menggunakan Environment Variables
         const difyKey = process.env.DIFY_API_KEY;
+
+        // --- AWAL LOGIKA BARU: CARI BUKU CATATAN (Mengingat Obrolan Sebelumnya) ---
+        let convId = "";
+        try {
+            const historyRes = await fetch(`https://api.dify.ai/v1/conversations?user=${cleanSender}&limit=1`, {
+                headers: { 'Authorization': `Bearer ${difyKey}` }
+            });
+            const historyData = await historyRes.json();
+            if (historyData.data && historyData.data.length > 0) {
+                convId = historyData.data[0].id; // Gunakan riwayat terakhir agar bot ingat
+            }
+        } catch (e) {
+            console.error("Gagal cek riwayat:", e);
+        }
+        // --- AKHIR LOGIKA BARU ---
+
+        // 2. Minta Jawaban ke Dify (Gemini) dengan Info Waktu dan Memori
+        const timeNow = new Date().toLocaleString("id-ID", {timeZone: "Asia/Jakarta"});
         const difyResponse = await fetch('https://api.dify.ai/v1/chat-messages', {
             method: 'POST',
             headers: {
@@ -28,9 +44,9 @@ module.exports = async function handler(req, res) {
             },
             body: JSON.stringify({
                 "inputs": {},
-                "query": messageText,
+                "query": `[Waktu: ${timeNow}] Pelanggan bilang: ${messageText}`,
                 "response_mode": "blocking",
-                "conversation_id": "", 
+                "conversation_id": convId, // Mengirimkan ID memori obrolan
                 "user": cleanSender 
             })
         });
